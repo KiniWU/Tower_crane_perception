@@ -19,6 +19,7 @@ def read_points(file_path, dim=4):
     suffix = os.path.splitext(file_path)[1] 
     assert suffix in ['.bin', '.ply']
     if suffix == '.bin':
+        print(np.fromfile(file_path, dtype=np.float32).shape)
         return np.fromfile(file_path, dtype=np.float32).reshape(-1, dim)
     else:
         raise NotImplementedError

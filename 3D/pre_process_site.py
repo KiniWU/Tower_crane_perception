@@ -64,7 +64,7 @@ def create_data_info_pkl(data_root, data_type, prefix, label=True, db=False):
         calib_dict = read_calib(calib_path)
         cur_info_dict['calib'] = calib_dict
 
-        lidar_points = read_points(lidar_path)
+        lidar_points = read_points(lidar_path) # ("/home/dataset2/point_cloud_data_700_800_ROI_bin_copy/output_707.bin") #
         reduced_lidar_points = lidar_points #remove_outside_points(
         #    points=lidar_points, 
         #    r0_rect=calib_dict['R0_rect'], 

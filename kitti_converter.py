@@ -27,7 +27,7 @@ class LabelToKittiConverter:
        1    score        Only for results: Float, indicating confidence in
                          detection, needed for p/r curves, higher is better.
     """
-    def __init__(self, conversion, gt_labels_fp, save_path="/media/simu/8TB_HDD/ThreeD_detection/data/site_data/dataset/training"):
+    def __init__(self, conversion, gt_labels_fp, save_path="/media/itx4090/系统/code/dataset2/training"):
         conversion_dict = self.get_attribute_idx(conversion)
         
         
@@ -142,7 +142,7 @@ def main():
 
 
     LabelToKittiConverter(conversion="class, x, y, z, l, w, h",
-                          gt_labels_fp="/home/simu/code/ThreeD_detection/data/site_data/point_cloud_data_700_800_labeled.txt")
+                          gt_labels_fp="/media/itx4090/系统/code/dataset2/point_cloud_data_700_800_labeled_ROI.txt")
 
     # read_mat_file("/home/simu/code/ThreeD_detection/data/site_data/point_cloud_data_700_800_labeled.mat")
 
