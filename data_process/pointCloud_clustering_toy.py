@@ -11,7 +11,7 @@ def get_cluster_info(pcd_file, dbscan_labels):
     
     # 初始化簇中心点坐标矩阵和点坐标及簇类型矩阵
     cluster_centers = []
-    points_with_labels = np.hstack((points, dbscan_labels.reshape(-1, 1)))
+    points_with_labels = np.hstack((pcd_file, dbscan_labels.reshape(-1, 1)))
     # points_with_labels = []
 
     # 计算每个簇的中心点坐标
@@ -29,7 +29,7 @@ def get_cluster_info(pcd_file, dbscan_labels):
 
 #Generating Synthetic Clusters
 np.random.seed(1)
-num_points = 300
+num_points = 30
 cluster_params = [
  {"mean": np.array([0, 0, 0]),    "cov": np.array([[1, 0.5, 0.5], [0.5, 1, 0.5], [0.5, 0.5, 1]])},
  {"mean": np.array([4, 4, 4]),    "cov": np.array([[1, 0.8, 0.8], [0.8, 1, 0.8], [0.8, 0.8, 1]])},
@@ -61,7 +61,7 @@ plt.show()
 point_cloud = o3d.geometry.PointCloud()
 point_cloud.points = o3d.utility.Vector3dVector(points)
 eps        = 1.2 # Distance threshold for points in a cluster
-min_points = 10 # Minimum number of points per cluster
+min_points = 3 # Minimum number of points per cluster
 # dbscan_labels = np.array(point_cloud.cluster_dbscan(eps=eps, min_points=min_points, print_progress=True))
 dbscan_labels = np.array(point_cloud.cluster_dbscan(eps=eps, min_points=min_points, print_progress=True))
 
@@ -83,6 +83,8 @@ cluster_centers, points_with_labels = get_cluster_info(points, dbscan_labels)
 print(cluster_centers)
 print(points_with_labels)
 
+
+# Write labels to a file
 with open("points_with_labels.txt", "w") as file:
-    for item in points_with_labels:
-        file.write(f"{points_with_labels}\n")
+    for label in points_with_labels:
+        file.write(f"{label}\n")

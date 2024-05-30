@@ -29,18 +29,17 @@ def visualize_clusters(pcd, labels):
     o3d.visualization.draw_geometries([pcd])
 
 def get_cluster_info(pcd_file, dbscan_labels):
-    # 读取点云数据
+    # read .pcd file 
     # pcd = o3d.io.read_point_cloud(pcd_file)
     #points = np.asarray(pcd.points)
 
-    points = np.asarray(pcd_file)
+    points = np.asarray(pcd_file.points)
     
-    # 初始化簇中心点坐标矩阵和点坐标及簇类型矩阵
-    cluster_centers = []
-    # points_with_labels = np.hstack((points, dbscan_labels.reshape(-1, 1)))
-    points_with_labels = []
+    # combine each point and its cluster type
+    points_with_labels = np.hstack((points, dbscan_labels.reshape(-1, 1)))
 
-    # 计算每个簇的中心点坐标
+    # calculate cluster center
+    cluster_centers = []
     unique_labels = np.unique(dbscan_labels)
     for label in unique_labels:
         if label != -1:  # 排除噪声点
@@ -48,7 +47,7 @@ def get_cluster_info(pcd_file, dbscan_labels):
             center = np.mean(cluster_points, axis=0)
             cluster_centers.append(center)
     
-    # 将簇中心点坐标转换为numpy数组
+    # convert cluster center to array
     cluster_centers = np.array(cluster_centers)
     
     return cluster_centers, points_with_labels
@@ -65,13 +64,12 @@ def main():
 
     # Downsample the point cloud
     down_pcd = downsample_point_cloud(pcd)
-    # down_pcd = pcd
     
     # Cluster the point cloud
     labels = cluster_point_cloud(down_pcd)
-    with open("my_list.txt", "w") as file:
-        for item in labels:
-            file.write(f"{labels}\n")
+    # with open("my_list.txt", "w") as file:
+    #     for item in labels:
+    #         file.write(f"{labels}\n")
     # print(labels)
     
     # Update the progress bar
@@ -90,6 +88,11 @@ def main():
 
     cluster_centers, points_with_labels = get_cluster_info(down_pcd, labels)
     print(cluster_centers)
+    print(points_with_labels)
+
+    # with open("points_with_labels.txt", "w") as file:
+    #     for label in points_with_labels:
+    #         file.write(f"{label}\n")
 
 if __name__ == '__main__':
     main()
