@@ -29,7 +29,7 @@ def get_cluster_info(pcd_file, dbscan_labels):
 
 #Generating Synthetic Clusters
 np.random.seed(1)
-num_points = 30
+num_points = 300
 cluster_params = [
  {"mean": np.array([0, 0, 0]),    "cov": np.array([[1, 0.5, 0.5], [0.5, 1, 0.5], [0.5, 0.5, 1]])},
  {"mean": np.array([4, 4, 4]),    "cov": np.array([[1, 0.8, 0.8], [0.8, 1, 0.8], [0.8, 0.8, 1]])},
@@ -61,7 +61,7 @@ plt.show()
 point_cloud = o3d.geometry.PointCloud()
 point_cloud.points = o3d.utility.Vector3dVector(points)
 eps        = 1.2 # Distance threshold for points in a cluster
-min_points = 3 # Minimum number of points per cluster
+min_points = 10 # Minimum number of points per cluster
 # dbscan_labels = np.array(point_cloud.cluster_dbscan(eps=eps, min_points=min_points, print_progress=True))
 dbscan_labels = np.array(point_cloud.cluster_dbscan(eps=eps, min_points=min_points, print_progress=True))
 
