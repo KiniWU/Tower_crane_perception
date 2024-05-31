@@ -53,7 +53,7 @@ not_detected_THRE = 20
 
 previsous_pts = []
 threed_boxes = []
-for n, (i_p, l_p) in enumerate(zip(image_list[80:600], lidar_list[80:600])):
+for n, (i_p, l_p) in enumerate(zip(image_list, lidar_list)):
     print(i_p, l_p)
     img = cv2.imread(str(i_p))
     img_input = cv2.resize(img, (1344, 768), cv2.INTER_CUBIC)

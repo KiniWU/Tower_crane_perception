@@ -44,13 +44,13 @@ def angle_between_vectors(v1=[], v2=[]):
     v2_u = unit_vector(v2)
     return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
 
-def find_closest_cluster(vecs=[[]], vec1=[]):
+def find_closest_cluster(vecs=[[]], vec1=[], n=2):
     angles = []
     for i in range(len(vecs)):
         angle = angle_between_vectors(vecs[i], vec1)
         angles.append(angle)
-
-    return np.argmin(angles)
+    print(angles)
+    return np.argmin(angles), np.argpartition(angles,n-1)[:n]
 
 def get_3d_box_from_points(pts=[]):
     x_min = np.min(pts[:, 0])
