@@ -14,7 +14,7 @@ def downsample_point_cloud(pcd, voxel_size=0.05):
     return down_pcd
 
 # Cluster the point cloud
-def cluster_point_cloud(pcd, eps=1, min_points=100):
+def cluster_point_cloud(pcd, eps=1.5, min_points=100):
     with o3d.utility.VerbosityContextManager(o3d.utility.VerbosityLevel.Debug) as cm:
         labels = np.array(pcd.cluster_dbscan(eps=eps, min_points=min_points, print_progress=True))
     return labels
@@ -56,7 +56,8 @@ def get_cluster_info(pcd_file, dbscan_labels):
 # Main function
 def main():
     #file_path = '/home/haochen/HKCRC/3D_object_detection/Tower_crane_perception/data_process/ouster_1.pcd'  # Replace with your file path
-    file_path = '/home/haochen/HKCRC/3D_object_detection/Tower_crane_perception/data_process/ouster1_300.pcd'  # Replace with your file path
+    #file_path = '/home/haochen/HKCRC/3D_object_detection/Tower_crane_perception/data_process/ouster1_300.pcd'  # Replace with your file path
+    file_path = '/home/haochen/HKCRC/3D_object_detection/data/site_data/test3/sync_camera_lidar/ouster1/ouster1_400.pcd'  # Replace with your file path
     pcd = load_point_cloud(file_path)
     
     # Initialize the progress bar
@@ -65,6 +66,9 @@ def main():
 
     # Downsample the point cloud
     down_pcd = downsample_point_cloud(pcd)
+
+    # point cloud filtering 
+    down_pcd, ind = down_pcd.remove_statistical_outlier(nb_neighbors=100, std_ratio=1.0)
     
     # Cluster the point cloud
     labels = cluster_point_cloud(down_pcd)

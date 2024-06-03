@@ -12,10 +12,10 @@ lidarData = pcread('ouster1_300.pcd');
 % yaw      = 0;
 % define 3D bounding box
 x_min = 1.8184e+01;
-x_max = 5.1105e+00;
-y_min = 4.5109e+01;
-y_max = -1.5019e+01;
-z_min = -2.7786e+01;
+x_max = 4.5109e+01;
+y_min = -2.7786e+01;
+y_max = 5.1105e+00;
+z_min = -1.5019e+01;
 z_max = 5.1105e+00;
 
 x_center = (x_min + x_max) / 2;
@@ -38,13 +38,14 @@ hold on;
 %     dimensions = bboxes(i, 4:6);
 %     orientation = axang2quat([0 0 1 bboxes(i, 7)]);
 %     cuboid = alphaShape([center; center + dimensions]);
-%     plot(cuboid, 'FaceColor', 'red', 'FaceAlpha', 0.5,'LineWidth',100);hold on;
+%     plot(cuboid, 'FaceColor', 'red', 'FaceAlpha', 0.5,'LineWidth',1);hold on;
 % end
+
 % add bounding box to visualization
 for i = 1:size(bboxes, 1)
     center = bboxes(i, 1:3);
     dimensions = bboxes(i, 4:6);
-    
+
     % Define the vertices of the cuboid
     vertices = [center(1) - dimensions(1)/2, center(2) - dimensions(2)/2, center(3) - dimensions(3)/2;
                 center(1) + dimensions(1)/2, center(2) - dimensions(2)/2, center(3) - dimensions(3)/2;
@@ -54,7 +55,7 @@ for i = 1:size(bboxes, 1)
                 center(1) + dimensions(1)/2, center(2) - dimensions(2)/2, center(3) + dimensions(3)/2;
                 center(1) + dimensions(1)/2, center(2) + dimensions(2)/2, center(3) + dimensions(3)/2;
                 center(1) - dimensions(1)/2, center(2) + dimensions(2)/2, center(3) + dimensions(3)/2];
-    
+
     % Define the faces of the cuboid
     faces = [1 2 3 4;
              5 6 7 8;
@@ -62,7 +63,7 @@ for i = 1:size(bboxes, 1)
              2 3 7 6;
              3 4 8 7;
              4 1 5 8];
-    
+
     % Create a patch object for each cuboid
     patch('Vertices', vertices, 'Faces', faces, 'FaceColor', 'red', 'FaceAlpha', 0.5);
 end
