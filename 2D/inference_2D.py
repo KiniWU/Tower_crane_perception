@@ -100,6 +100,7 @@ for n, (i_p, l_p) in enumerate(zip(image_list, lidar_list)):
                 lidar_pt = camera2Lidar(camera_pt)
                 #print(pixel_pt, camera_pt, lidar_pt)
                 pcd, all_cluster_centers, all_cluster_aligments = pcd_clustering(str(l_p))
+                print(all_cluster_centers)
 
 
                 # #print(all_cluster_centers)

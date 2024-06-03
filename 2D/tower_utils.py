@@ -50,7 +50,7 @@ def find_closest_cluster(vecs=[[]], vec1=[], n=2):
         angle = angle_between_vectors(vecs[i], vec1)
         angles.append(angle)
     print(angles)
-    return np.argmin(angles), np.argpartition(angles,n-1)[:n]
+    return np.argmin(angles) #, np.argpartition(angles,n-1)[:n]
 
 def get_3d_box_from_points(pts=[]):
     x_min = np.min(pts[:, 0])

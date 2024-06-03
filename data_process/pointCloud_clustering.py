@@ -55,7 +55,7 @@ def get_cluster_info(pcd_file, dbscan_labels):
 
 # Main function
 def pcd_clustering(file_path="ouster_1.pcd"):
-    file_path = 'ouster_1.pcd'  # Replace with your file path
+    #file_path = 'ouster_1.pcd'  # Replace with your file path
     # file_path = '/home/haochen/HKCRC/3D_object_detection/data/site_data/test3/sync_camera_lidar/ouster1/ouster1_400.pcd'  # Replace with your file path
     pcd = load_point_cloud(file_path)
     
