@@ -14,7 +14,7 @@ def downsample_point_cloud(pcd, voxel_size=0.05):
     return down_pcd
 
 # Cluster the point cloud
-def cluster_point_cloud(pcd, eps=10, min_points=100):
+def cluster_point_cloud(pcd, eps=1.5, min_points=100):
     with o3d.utility.VerbosityContextManager(o3d.utility.VerbosityLevel.Debug) as cm:
         labels = np.array(pcd.cluster_dbscan(eps=eps, min_points=min_points, print_progress=False))
     return labels
@@ -67,6 +67,9 @@ def pcd_clustering(file_path="ouster_1.pcd"):
     
     # Cluster the point cloud
     labels = cluster_point_cloud(down_pcd)
+
+    # point cloud filtering 
+    down_pcd, ind = down_pcd.remove_statistical_outlier(nb_neighbors=100, std_ratio=1.0)
     # with open("my_list.txt", "w") as file:
     #     for item in labels:
     #         file.write(f"{labels}\n")
