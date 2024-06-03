@@ -53,7 +53,7 @@ not_detected_THRE = 20
 
 previsous_pts = []
 threed_boxes = []
-for n, (i_p, l_p) in enumerate(zip(image_list, lidar_list)):
+for n, (i_p, l_p) in enumerate(zip(image_list[290:], lidar_list[290:])):
     print(i_p, l_p)
     img = cv2.imread(str(i_p))
     img_input = cv2.resize(img, (1344, 768), cv2.INTER_CUBIC)
@@ -98,7 +98,7 @@ for n, (i_p, l_p) in enumerate(zip(image_list, lidar_list)):
                 print(pixel_pt, pred[0, 4])
                 camera_pt = pixel2Camera(pixel_pt, 50.0)
                 lidar_pt = camera2Lidar(camera_pt)
-                #print(pixel_pt, camera_pt, lidar_pt)
+                print(pixel_pt, camera_pt, lidar_pt)
                 pcd, all_cluster_centers, all_cluster_aligments = pcd_clustering(str(l_p))
                 print(all_cluster_centers)
 
@@ -141,8 +141,8 @@ for n, (i_p, l_p) in enumerate(zip(image_list, lidar_list)):
     
     out.write(img)
 
-    # if n>600:
-    #     break
+    if n>320:
+        break
 # vis.destroy_window()
 cv2.destroyAllWindows()
 out.release()
