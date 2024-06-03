@@ -55,7 +55,8 @@ def get_cluster_info(pcd_file, dbscan_labels):
 
 # Main function
 def pcd_clustering(file_path="ouster_1.pcd"):
-    #file_path = 'ouster_1.pcd'  # Replace with your file path
+    file_path = 'ouster_1.pcd'  # Replace with your file path
+    # file_path = '/home/haochen/HKCRC/3D_object_detection/data/site_data/test3/sync_camera_lidar/ouster1/ouster1_400.pcd'  # Replace with your file path
     pcd = load_point_cloud(file_path)
     
     # Initialize the progress bar
@@ -64,12 +65,13 @@ def pcd_clustering(file_path="ouster_1.pcd"):
 
     # Downsample the point cloud
     down_pcd = downsample_point_cloud(pcd)
+
+    # point cloud filtering 
+    down_pcd, ind = down_pcd.remove_statistical_outlier(nb_neighbors=100, std_ratio=1.0)
     
     # Cluster the point cloud
     labels = cluster_point_cloud(down_pcd)
 
-    # point cloud filtering 
-    down_pcd, ind = down_pcd.remove_statistical_outlier(nb_neighbors=100, std_ratio=1.0)
     # with open("my_list.txt", "w") as file:
     #     for item in labels:
     #         file.write(f"{labels}\n")
@@ -82,16 +84,16 @@ def pcd_clustering(file_path="ouster_1.pcd"):
     #bar.finish()
     
     # Visualize the original point cloud
-    #print('Displaying the original point cloud...')
-    #o3d.visualization.draw_geometries([down_pcd])
+    # print('Displaying the original point cloud...')
+    # o3d.visualization.draw_geometries([down_pcd])
     
     # Visualize the clustered results
     # print('Displaying the clustered results...')
     # visualize_clusters(down_pcd, labels)
 
     cluster_centers, points_with_labels = get_cluster_info(down_pcd, labels)
-    #print(cluster_centers)
-    #print(points_with_labels)
+    # print(cluster_centers)
+    # print(points_with_labels)
 
     # with open("points_with_labels.txt", "w") as file:
     #     for label in points_with_labels:
