@@ -25,8 +25,8 @@ model = torch.hub.load('yolov5', 'custom', path='/home/Tower_crane_perception/2D
 model.iou = 0.2
 model.conf = 0.7
 # Images
-video_path = Path("/home/2D/inference/sync_camera_lidar/camera1/")
-lidar_path = Path("/home/2D/inference/sync_camera_lidar/ouster1/")
+video_path = Path("/home/tower_crane_data/sync_camera_lidar/camera1/")
+lidar_path = Path("/home/tower_crane_data/sync_camera_lidar/ouster1/")
 image_list = sorted(video_path.rglob("*.png"), key=lambda a: int(str(a).split("_")[-1].split(".")[0]))
 lidar_list = sorted(lidar_path.rglob("*.pcd"), key=lambda a: int(str(a).split("_")[-1].split(".")[0]))
 save_path = Path("/home/Tower_crane_perception/2D/runs/inference/2d_lidar/")
