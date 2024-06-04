@@ -25,15 +25,15 @@ model = torch.hub.load('yolov5', 'custom', path='/home/Tower_crane_perception/2D
 model.iou = 0.2
 model.conf = 0.7
 # Images
-video_path = Path("/home/tower_crane_data/sync_camera_lidar/camera1/")
-lidar_path = Path("/home/tower_crane_data/sync_camera_lidar/ouster1/")
+video_path = Path("/home/tower_crane_data/site_data/test4/sync_camera_lidar/hikrobot/")
+lidar_path = Path("/home/tower_crane_data/site_data/test4/sync_camera_lidar/livox/")
 image_list = sorted(video_path.rglob("*.png"), key=lambda a: int(str(a).split("_")[-1].split(".")[0]))
 lidar_list = sorted(lidar_path.rglob("*.pcd"), key=lambda a: int(str(a).split("_")[-1].split(".")[0]))
 save_path = Path("/home/Tower_crane_perception/2D/runs/inference/2d_lidar/")
 save_path.mkdir(exist_ok=True, parents=True)
 
 if ORI_RESO:
-    size = (3840, 2160)
+    size = (5472, 3648)
 else:
     size = (1344, 768)
 out = cv2.VideoWriter(str(save_path / "video_comp.avi"), cv2.VideoWriter_fourcc(*'MPEG'), 10, size, True)
@@ -42,8 +42,8 @@ out = cv2.VideoWriter(str(save_path / "video_comp.avi"), cv2.VideoWriter_fourcc(
 # vis.create_window(visible=True) 
 
 
-x_ratio = 3840 / 1344
-y_ratio = 2160 / 768
+x_ratio = 5472 / 1344
+y_ratio = 3648 / 768
 last_pred = None
 start_tracking = False
 end_tracking = False
@@ -53,7 +53,7 @@ not_detected_THRE = 20
 
 previsous_pts = []
 threed_boxes = []
-for n, (i_p, l_p) in enumerate(zip(image_list[290:], lidar_list[290:])):
+for n, (i_p, l_p) in enumerate(zip(image_list, lidar_list)):
     print(i_p, l_p)
     img = cv2.imread(str(i_p))
     img_input = cv2.resize(img, (1344, 768), cv2.INTER_CUBIC)
