@@ -12,15 +12,15 @@ LowerDahua2LowerOuster = np.array([[-0.00380224, -0.999927, -0.0114549, 0.046863
                 [0.876802, 0.00217442, -0.480847, 0.603057],
                 [0,0,0,1]])
 
-MVS_Intrinsic = np.array([2601.379733,    0.000000000,    2679.106089,
-                           0.000000000,    2604.463961,    1851.265404,
-                           0.000000000,    0.000000000,    1.000000000])
+MVS_Intrinsic = np.array([[2601.379733,    0.000000000,    2679.106089],
+                           [0.000000000,    2604.463961,    1851.265404],
+                           [0.000000000,    0.000000000,    1.000000000]])
 
 MVS_dist = np.array([-0.1281444408,    0.1072910023,    0.001436884538,    -0.0009784912760,    -0.05044686749])
-MVS2Livox = np.array([-0.00949657, 0.0142872, -0.999853, 0.00322139,
-             -0.00300755, 0.999893,  0.0143163,    -0.121013,
-            0.99995,0.00314306,-0.00945258,0.0338244,
-             0,                 0,                 0,                 1])
+MVS2Livox = np.array([[-0.00949657, 0.0142872, -0.999853, 0.00322139],
+                      [-0.00300755, 0.999893,  0.0143163,    -0.121013],
+                      [0.99995,0.00314306,-0.00945258,0.0338244],
+                      [0,                 0,                 0,                 1]])
 
 Intrinsic = MVS_Intrinsic
 c2L = MVS2Livox
@@ -32,7 +32,7 @@ def pixel2Camera(pixel_pt=[], distance = 1.0):
     distance: [m]
     """
     n_pt = cv2.undistortPoints(np.array([[pixel_pt[:-1]]]), Intrinsic, camera_dist, P=Intrinsic)
-    print(n_pt)
+    #print(n_pt)
     n_pt = np.dot(np.linalg.inv(Intrinsic), pixel_pt)
 
     ratio = distance / np.sqrt(n_pt[0]**2 + n_pt[1]**2 + n_pt[2]**2)
@@ -67,6 +67,7 @@ def find_closest_cluster(vecs=[[]], vec1=[], n=2):
     for i in range(len(vecs)):
         angle = angle_between_vectors(vecs[i], vec1)
         angles.append(angle)
+    print(angles)
     return np.argmin(angles) #, np.argpartition(angles,n-1)[:n]
 
 def get_3d_box_from_points(pts=[]):

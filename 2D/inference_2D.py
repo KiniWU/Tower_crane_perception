@@ -96,11 +96,13 @@ for n, (i_p, l_p) in enumerate(zip(image_list, lidar_list)):
             if ORI_RESO:
                 pixel_pt = ((pred[0, 0]+pred[0, 2])*x_ratio/2, (pred[0, 1]+pred[0, 3])*x_ratio/2, 1)
                 print(pixel_pt, pred[0, 4])
-                camera_pt = pixel2Camera(pixel_pt, 50.0)
+                camera_pt = pixel2Camera(pixel_pt, -20.0)
                 lidar_pt = camera2Lidar(camera_pt)
                 print(pixel_pt, camera_pt, lidar_pt)
-                pcd, all_cluster_centers, all_cluster_aligments = pcd_clustering(str(l_p))
+                # pcd, all_cluster_centers, all_cluster_aligments = pcd_clustering(str(l_p))
+                all_cluster_centers = [[32, 6.56, -0.7]]
                 print(all_cluster_centers)
+
 
 
                 # #print(all_cluster_centers)
