@@ -101,4 +101,3 @@ for i=1:length(synced_camera_msgs)
     filename = fullfile(synced_camera_folder,sprintf('camera1_%d.png',i));
     imwrite(image_out,filename);
 end
-
