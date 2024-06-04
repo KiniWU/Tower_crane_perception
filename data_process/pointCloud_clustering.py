@@ -54,7 +54,7 @@ def get_cluster_info(pcd_file, dbscan_labels):
 
 
 # Main function
-def pcd_clustering(file_path="ouster_1.pcd"):
+def pcd_clustering(file_path="ouster_1.pcd", debug=False):
     #file_path = 'ouster_1.pcd'  # Replace with your file path
     # file_path = '/home/haochen/HKCRC/3D_object_detection/data/site_data/test3/sync_camera_lidar/ouster1/ouster1_400.pcd'  # Replace with your file path
     pcd = load_point_cloud(file_path)
@@ -86,20 +86,22 @@ def pcd_clustering(file_path="ouster_1.pcd"):
     # Visualize the original point cloud
     # print('Displaying the original point cloud...')
     # o3d.visualization.draw_geometries([down_pcd])
-    
-    # Visualize the clustered results
-    # print('Displaying the clustered results...')
-    # visualize_clusters(down_pcd, labels)
 
     cluster_centers, points_with_labels = get_cluster_info(down_pcd, labels)
-    # print(cluster_centers)
-    # print(points_with_labels)
 
     # with open("points_with_labels.txt", "w") as file:
     #     for label in points_with_labels:
     #         file.write(f"{label}\n")
+    
+    # Visualize the clustered results
+    if debug:
+        print('Displaying the clustered results...')
+        visualize_clusters(down_pcd, labels)
+
+        print(cluster_centers)
+        print(points_with_labels)
 
     return pcd, cluster_centers, points_with_labels
 
 if __name__ == '__main__':
-    pcd_clustering()
+    pcd_clustering(file_path = '/home/haochen/HKCRC/3D_object_detection/data/site_data/test4/sync_camera_lidar/livox/ouster1_70.pcd',debug=True)
