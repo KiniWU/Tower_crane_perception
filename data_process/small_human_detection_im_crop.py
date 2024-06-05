@@ -23,13 +23,13 @@ def crop_im(img, num_batches = [8, 8]):
 
 
 if __name__ == "__main__":
-    image_path = Path()
-    image_list = image_path.rglob("*.png")
-    save_path = Path()
+    image_path = Path("/home/tower_crane_data/site_data/test4/sync_camera_lidar/hikrobot/")
+    image_list = sorted(image_path.rglob("*.png"), key=lambda a: int(str(a).split("_")[-1].split(".")[0]))
+    save_path = Path("/home/tower_crane_data/site_data/test4/sync_camera_lidar/cropped/")
     save_path.mkdir(exist_ok=True, parents=True)
-    for i_f in image_list:
-        image_name = i_f.name()
-        img = cv2.imread(i_f)
+    for i_f in image_list[:20]:
+        image_name = i_f.name
+        img = cv2.imread(str(i_f))
         image_batches = crop_im(img, num_batches = [8, 8])
         for num, im in enumerate(image_batches):
-            cv2.imwrite(str(save_path/(str(num) + ".png")), im)
+            cv2.imwrite(str(save_path/(image_name + "_" + str(num) + ".png")), im)

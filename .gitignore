@@ -4,3 +4,6 @@
 *.pt
 *.avi
 *.pcd
+*.zip
+*.DS_Store
+*.safetensors
