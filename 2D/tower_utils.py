@@ -32,8 +32,9 @@ def pixel2Camera(pixel_pt=[], distance = 1.0):
     distance: [m]
     """
     n_pt = cv2.undistortPoints(np.array([[pixel_pt[:-1]]]), Intrinsic, camera_dist, P=Intrinsic)
-    #print(n_pt)
-    n_pt = np.dot(np.linalg.inv(Intrinsic), pixel_pt)
+    print(n_pt)
+    new_pt = np.array([n_pt[0, 0, 0], n_pt[0, 0, 1], 1])
+    n_pt = np.dot(np.linalg.inv(Intrinsic), new_pt)
 
     ratio = distance / np.sqrt(n_pt[0]**2 + n_pt[1]**2 + n_pt[2]**2)
 
