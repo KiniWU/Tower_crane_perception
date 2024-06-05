@@ -1,8 +1,8 @@
-weights: yolov5s.pt
+weights: yolov5l6.pt
 cfg: ''
 data: dataset.yaml
 hyp:
-  lr0: 0.01
+  lr0: 0.001
   lrf: 0.1
   momentum: 0.937
   weight_decay: 0.0005
@@ -17,22 +17,22 @@ hyp:
   iou_t: 0.2
   anchor_t: 4.0
   fl_gamma: 0.0
-  hsv_h: 0.015
-  hsv_s: 0.7
-  hsv_v: 0.4
+  hsv_h: 0.0
+  hsv_s: 0.0
+  hsv_v: 0.0
   degrees: 0.0
-  translate: 0.1
-  scale: 0.9
+  translate: 0.0
+  scale: 0.0
   shear: 0.0
   perspective: 0.0
   flipud: 0.0
-  fliplr: 0.5
-  mosaic: 1.0
-  mixup: 0.1
-  copy_paste: 0.1
+  fliplr: 0.0
+  mosaic: 0.0
+  mixup: 0.0
+  copy_paste: 0.0
 epochs: 1000
 batch_size: 2
-imgsz: 640
+imgsz: 1280
 rect: false
 resume: false
 nosave: false
@@ -48,7 +48,7 @@ image_weights: false
 device: ''
 multi_scale: false
 single_cls: false
-optimizer: SGD
+optimizer: Adam
 sync_bn: false
 workers: 8
 project: runs/train
@@ -69,4 +69,4 @@ bbox_interval: -1
 artifact_alias: latest
 ndjson_console: false
 ndjson_file: false
-save_dir: runs/train/exp3
+save_dir: runs/train/exp2

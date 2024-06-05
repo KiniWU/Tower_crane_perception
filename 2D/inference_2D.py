@@ -23,13 +23,13 @@ ORI_RESO = True
 #model = torch.hub.load("/home/2D/weights", "last.pt")  # or yolov5n - yolov5x6, custom
 model = torch.hub.load('yolov5', 'custom', path='/home/Tower_crane_perception/2D/runs/train/exp3/weights/last.pt', source='local')
 model.iou = 0.2
-model.conf = 0.7
+model.conf = 0.01
 # Images
 video_path = Path("/home/tower_crane_data/site_data/test4/sync_camera_lidar/hikrobot/")
 lidar_path = Path("/home/tower_crane_data/site_data/test4/sync_camera_lidar/livox/")
 image_list = sorted(video_path.rglob("*.png"), key=lambda a: int(str(a).split("_")[-1].split(".")[0]))
 lidar_list = sorted(lidar_path.rglob("*.pcd"), key=lambda a: int(str(a).split("_")[-1].split(".")[0]))
-save_path = Path("/home/Tower_crane_perception/2D/runs/inference/2d_lidar/")
+save_path = Path("/home/Tower_crane_perception/2D/runs/inference/2d_lidar_livox/")
 save_path.mkdir(exist_ok=True, parents=True)
 
 if ORI_RESO:
