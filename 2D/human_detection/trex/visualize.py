@@ -12,6 +12,7 @@ def visualize(image_pil: Image,
               overwrite_color: Dict = None,
               agnostic_random_color: bool = False,
               draw_score=False,
+              all_color_set_to=(255, 0, 0),
               draw_label=True) -> Image:
     """Plot bounding boxes and labels on an image.
 
@@ -49,7 +50,7 @@ def visualize(image_pil: Image,
                 label2color[str(label)] = tuple(
                     np.random.randint(0, 255, size=3).tolist())
             else:
-                label2color[str(label)] = (255, 255, 255)
+                label2color[str(label)] = all_color_set_to
 
     # Create a PIL ImageDraw object to draw on the input image
     draw = ImageDraw.Draw(image_pil)
@@ -66,6 +67,7 @@ def visualize(image_pil: Image,
             color = label2color[str(label)]
         else:
             color = tuple(np.random.randint(0, 255, size=3).tolist())
+        color = (255, 0, 0)
         # Extract the box coordinates
         x0, y0, x1, y1 = box
         x0, y0, x1, y1 = int(x0), int(y0), int(x1), int(y1)
