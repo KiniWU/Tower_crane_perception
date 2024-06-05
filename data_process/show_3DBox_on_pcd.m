@@ -1,22 +1,26 @@
 % load lidar data
-lidarData = pcread('ouster1_300.pcd');
+frame_number = 308;
+lidarFolder = '/home/haochen/HKCRC/3D_object_detection/data/site_data/test3/sync_camera_lidar/ouster1';
+lidarFilename = fullfile(lidarFolder,sprintf('ouster1_%d.pcd',frame_number));
+lidarData     = pcread(lidarFilename);
+% lidarData        = pcread('ouster1_300.pcd');
+threed_boxes_all = load('/home/haochen/HKCRC/3D_object_detection/data/site_data/test3/sync_camera_lidar/threed_boxes.txt');
+threed_boxes     = threed_boxes_all(frame_number,:);
 
-% define 3D bouding box 
-% 3d_box = [1.8184e+01; 4.5109e+01; -2.7786e+01; 5.1105e+00; -1.5019e+01;5.1105e+00];
-% x_center = (1.8184e+01 + 5.1105e+00)/2;
-% y_center = (4.5109e+01 + -1.5019e+01)/2;
-% z_center = (-2.7786e+01 + 5.1105e+00)/2;
-% length   = abs(1.8184e+01 - 5.1105e+00);
-% width    = abs(4.5109e+01 - -1.5019e+01);
-% height   = abs(-2.7786e+01 - 5.1105e+00);
-% yaw      = 0;
 % define 3D bounding box
-x_min = 1.8184e+01;
-x_max = 4.5109e+01;
-y_min = -2.7786e+01;
-y_max = 5.1105e+00;
-z_min = -1.5019e+01;
-z_max = 5.1105e+00;
+% x_min = 1.8184e+01;
+% x_max = 2.0467e+01;
+% y_min = -2.7404e+01;
+% y_max = -2.2677e+01;
+% z_min = 1.0042e+01;
+% z_max = 1.2742e+01;
+
+x_min = threed_boxes(1);
+x_max = threed_boxes(2);
+y_min = threed_boxes(3);
+y_max = threed_boxes(4);
+z_min = threed_boxes(5);
+z_max = threed_boxes(6);
 
 x_center = (x_min + x_max) / 2;
 y_center = (y_min + y_max) / 2;
@@ -71,54 +75,3 @@ end
 % hold off;
 
 
-%%
-% 设置点云数据文件夹和视频输出路径
-dataFolder = 'path_to_your_lidar_data_folder';
-videoOutputPath = 'output_video_path.avi';
-
-% 创建 VideoWriter 对象
-v = VideoWriter(videoOutputPath);
-open(v);
-
-% 定义边界框信息（示例）
-% 您需要根据实际情况替换或计算边界框数据
-bboxes = [x_center, y_center, z_center, length, width, height, yaw];
-
-% 获取点云文件列表
-filePattern = fullfile(dataFolder, '*.pcd');
-lidarFiles = dir(filePattern);
-
-% 循环遍历所有点云文件
-for k = 1:length(lidarFiles)
-    baseFileName = lidarFiles(k).name;
-    fullFileName = fullfile(dataFolder, baseFileName);
-    
-    % 读取点云数据
-    ptCloud = pcread(fullFileName);
-    
-    % 创建图形并显示点云
-    f = figure('visible', 'off');
-    pcshow(ptCloud);
-    hold on;
-    
-    % 添加边界框到可视化中
-    for i = 1:size(bboxes, 1)
-        center = bboxes(i, 1:3);
-        dimensions = bboxes(i, 4:6);
-        orientation = axang2quat([0 0 1 bboxes(i, 7)]);
-        cuboid = alphaShape([center; center + dimensions]);
-        plot(cuboid, 'FaceColor', 'red', 'FaceAlpha', 0.5);
-    end
-    
-    hold off;
-    
-    % 捕获当前图形并写入视频
-    frame = getframe(gcf);
-    writeVideo(v, frame);
-    
-    % 关闭图形窗口以节省资源
-    close(f);
-end
-
-% 关闭视频文件
-close(v);
