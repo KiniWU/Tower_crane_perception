@@ -1,7 +1,7 @@
 import torch
 import cv2
 from pathlib import Path
-from tower_utils import pixel2Camera, camera2Lidar, find_closest_cluster, get_3d_box_from_points, lidar2Camera, camera2Pixel
+from tower_utils import pixel2Camera, camera2Lidar, find_closest_cluster_angle, find_closest_cluster_eucli, get_3d_box_from_points, lidar2Camera, camera2Pixel
 import open3d as o3d
 import time
 import numpy as np
@@ -92,11 +92,12 @@ for n, (i_p, l_p) in enumerate(zip(image_list, lidar_list)):
             #     twod_box = tracking_diff(previsous_pts, 3)
             # twod_box = []
             if ORI_RESO:
-                pixel_pt = ((pred[0, 0]+pred[0, 2])*x_ratio/2, (pred[0, 1]+pred[0, 3])*x_ratio/2, 1)
-                print(pixel_pt, pred[0, 4])
-                camera_pt = pixel2Camera(pixel_pt, -20.0)
-                lidar_pt = camera2Lidar(camera_pt)
-                print(pixel_pt, camera_pt, lidar_pt)
+                pixel_pt = np.array([[(pred[0, 0]+pred[0, 2])*x_ratio/2], 
+                                     [(pred[0, 1]+pred[0, 3])*x_ratio/2]])
+                # print(pixel_pt, pred[0, 4])
+                # camera_pt = pixel2Camera(pixel_pt, -20.0)
+                # lidar_pt = camera2Lidar(camera_pt)
+                # print(pixel_pt, camera_pt, lidar_pt)
                 pcd, all_cluster_centers, all_cluster_aligments = pcd_clustering(str(l_p))
                 #all_cluster_centers = [[32, 6.56, -0.7]]
                 print(all_cluster_centers)
@@ -107,14 +108,14 @@ for n, (i_p, l_p) in enumerate(zip(image_list, lidar_list)):
                 camera_centers = lidar2Camera(lidar_centers)
                 pixel_centers = camera2Pixel(camera_centers)
 
-                print("tto compare", pixel_centers, pixel_pt)
+                # print("tto compare", pixel_centers, pixel_pt)
 
 
                 # #print(all_cluster_centers)
                 # # all_cluster_centers = [[100, 40, 50],
                 # #                        [200, -50, 60],
                 # #                        [-40, 60, 80]]
-                ind = find_closest_cluster(vecs=all_cluster_centers, vec1=lidar_pt[:3])
+                ind = find_closest_cluster_eucli(vecs=pixel_centers[:2, :], vec1=pixel_pt)
                 threed_box = get_3d_box_from_points(all_cluster_aligments[all_cluster_aligments[:, 3]==ind])
                 threed_boxes.append(threed_box)
 
@@ -151,6 +152,6 @@ for n, (i_p, l_p) in enumerate(zip(image_list, lidar_list)):
     if n>200:
         break
 # vis.destroy_window()
-cv2.destroyAllWindows()
 out.release()
 np.savetxt(save_path/'threed_boxes.txt', np.array(threed_boxes), fmt='%1.4e')
+cv2.destroyAllWindows()

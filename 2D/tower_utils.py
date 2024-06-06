@@ -1,47 +1,7 @@
 import cv2
 import numpy as np
+from config import Intrinsic, c2L, camera_dist
 
-## Upper camera and upper lidar
-
-UpperDahua2UpperOuster = np.array([[ -0.00380224, -0.999927, -0.0114549, 0.0468632],
-                                [-0.480837, 0.011872, -0.87673, 0.810458],
-                                [0.876802, 0.00217442, -0.480847, 0.603057],
-                                [0,                   0,               0,             1]])
-
-UpperDahua_Intrinsic = np.array([[ 3727.035325,    0.000000000,   1905.471636],
-                                 [0.000000000,    3707.139075,    1079.386277],
-                                 [0.000000000,    0.000000000,    1.000000000]])
-UpperDahua_dist = np.array([-0.4634329371, 0.3049578476, 0.01125169038, -0.003694136270, -0.2437815753])
-
-
-## Lower camera and lower lidar
-
-LowerDahua_Intrinsic = np.array([[3398.232603, 0, 1895.977318],
-                      [0, 3409.324671, 1081.942343],
-                      [0,0,1]])
-
-LowerDahua_dist = np.array([-0.3873637993, 0.2923534322, -2.786784398e-05, -0.0001144799345, -0.2634945271])
-
-LowerDahua2LowerOuster = np.array([[-0.00380224, -0.999927, -0.0114549, 0.0468632],
-                [-0.480837, 0.011872, -0.87673, 0.810458],
-                [0.876802, 0.00217442, -0.480847, 0.603057],
-                [0,0,0,1]])
-
-MVS_Intrinsic = np.array([[2601.379733,    0.000000000,    2679.106089],
-                           [0.000000000,    2604.463961,    1851.265404],
-                           [0.000000000,    0.000000000,    1.000000000]])
-
-## MVS camera and Livox lidar
-
-MVS_dist = np.array([-0.1281444408,    0.1072910023,    0.001436884538,    -0.0009784912760,    -0.05044686749])
-MVS2Livox = np.array([[-0.00949657, 0.0142872, -0.999853, 0.00322139],
-                      [-0.00300755, 0.999893,  0.0143163,    -0.121013],
-                      [0.99995,0.00314306,-0.00945258,0.0338244],
-                      [0,                 0,                 0,                 1]])
-
-Intrinsic = UpperDahua_Intrinsic
-c2L = UpperDahua2UpperOuster
-camera_dist = UpperDahua_dist
 
 def pixel2Camera(pixel_pt=[], distance = 1.0):
     """
@@ -92,13 +52,33 @@ def angle_between_vectors(v1=[], v2=[]):
     v2_u = unit_vector(v2)
     return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
 
-def find_closest_cluster(vecs=[[]], vec1=[], n=2):
+def find_closest_cluster_angle(vecs=[[]], vec1=[], n=2):
     angles = []
     for i in range(len(vecs)):
         angle = angle_between_vectors(vecs[i], vec1)
         angles.append(angle)
     print(angles)
     return np.argmin(angles) #, np.argpartition(angles,n-1)[:n]
+
+def find_closest_cluster_eucli(vecs=[[]], vec1=[]):
+    """
+    vecs = [[1, a],
+            [2, b]
+            [3, c],
+            [.., ..]]
+    vec1 = [[1],
+            [2]
+            [3],
+            [..]]
+    """
+    assert vecs.shape[0] == vec1.shape[0]
+    diff_sqrt = (vecs - vec1) * (vecs - vec1) 
+    # print("test math", vecs, vec1, (vecs - vec1))
+    # print("test math", diff_sqrt)
+    
+    dis = np.sum(diff_sqrt, axis=0)
+    # print("test math", dis)
+    return np.argmin(dis) #, np.argpartition(angles,n-1)[:n]
 
 def get_3d_box_from_points(pts=[]):
     x_min = np.min(pts[:, 0])
