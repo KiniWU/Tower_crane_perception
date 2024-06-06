@@ -54,7 +54,7 @@ threed_boxes = []
 
 font = cv2.FONT_HERSHEY_SIMPLEX 
 # fontScale 
-fontScale = 10
+fontScale = 5
    
 # Blue color in BGR 
 color = (0, 0, 255) 
