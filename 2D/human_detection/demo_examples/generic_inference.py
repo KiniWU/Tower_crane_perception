@@ -115,7 +115,7 @@ if __name__ == "__main__":
     x_ratio = 5472 / 1344
     y_ratio = 3648 / 768
     
-    for n, i_p  in enumerate(image_list[9:50]):
+    for n, i_p  in enumerate(image_list[36:50]):
 
         target_image = str(i_p)
         # target_image = "assets/tower_crane/camera1_36-1-_png.rf.dd69389d01a93eefa2b2a7e0300ff174.jpg"
@@ -138,7 +138,7 @@ if __name__ == "__main__":
         image = Image.open(target_image)
         image = visualize(image, filtered_result, draw_score=True, random_color=False, draw_width=12)
         #image_to_save = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
-        image.save(os.path.join(args.vis_dir, f"generic" + str(n+9) + ".jpg"))
+        image.save(os.path.join(args.vis_dir, f"generic" + str(n+36) + ".jpg"))
         # print(f"Visualized image saved to {args.vis_dir}/generic.jpg")
 
         # out.write(image_to_save)
