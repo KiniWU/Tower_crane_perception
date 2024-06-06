@@ -1,6 +1,21 @@
 import cv2
 import numpy as np
 
+## Upper camera and upper lidar
+
+UpperDahua2UpperOuster = np.array([[ -0.00380224, -0.999927, -0.0114549, 0.0468632],
+                                [-0.480837, 0.011872, -0.87673, 0.810458],
+                                [0.876802, 0.00217442, -0.480847, 0.603057],
+                                [0,                   0,               0,             1]])
+
+UpperDahua_Intrinsic = np.array([[ 3727.035325,    0.000000000,   1905.471636],
+                                 [0.000000000,    3707.139075,    1079.386277],
+                                 [0.000000000,    0.000000000,    1.000000000]])
+UpperDahua_dist = np.array([-0.4634329371, 0.3049578476, 0.01125169038, -0.003694136270, -0.2437815753])
+
+
+## Lower camera and lower lidar
+
 LowerDahua_Intrinsic = np.array([[3398.232603, 0, 1895.977318],
                       [0, 3409.324671, 1081.942343],
                       [0,0,1]])
@@ -16,15 +31,17 @@ MVS_Intrinsic = np.array([[2601.379733,    0.000000000,    2679.106089],
                            [0.000000000,    2604.463961,    1851.265404],
                            [0.000000000,    0.000000000,    1.000000000]])
 
+## MVS camera and Livox lidar
+
 MVS_dist = np.array([-0.1281444408,    0.1072910023,    0.001436884538,    -0.0009784912760,    -0.05044686749])
 MVS2Livox = np.array([[-0.00949657, 0.0142872, -0.999853, 0.00322139],
                       [-0.00300755, 0.999893,  0.0143163,    -0.121013],
                       [0.99995,0.00314306,-0.00945258,0.0338244],
                       [0,                 0,                 0,                 1]])
 
-Intrinsic = MVS_Intrinsic
-c2L = MVS2Livox
-camera_dist = MVS_dist
+Intrinsic = UpperDahua_Intrinsic
+c2L = UpperDahua2UpperOuster
+camera_dist = UpperDahua_dist
 
 def pixel2Camera(pixel_pt=[], distance = 1.0):
     """
@@ -39,6 +56,18 @@ def pixel2Camera(pixel_pt=[], distance = 1.0):
     ratio = distance / np.sqrt(n_pt[0]**2 + n_pt[1]**2 + n_pt[2]**2)
 
     return n_pt*ratio
+
+def camera2Pixel(camera_pt=[]):
+    """
+    camera_pt: x,y,z,1
+    """
+    c_pt = np.ones((3, camera_pt.shape[-1]), np.float32)
+    c_pt = camera_pt[:3, :] / camera_pt[2, :]
+    
+    return np.dot(Intrinsic, c_pt)
+
+def lidar2Camera(lidar_pt=[]):
+    return np.dot(np.linalg.inv(c2L), lidar_pt)
 
 def camera2Lidar(camera_pt=[]):
     c_pt = np.ones((4, 1), np.float32)

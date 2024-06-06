@@ -1,12 +1,13 @@
 import torch
 import cv2
 from pathlib import Path
-from tower_utils import pixel2Camera, camera2Lidar, find_closest_cluster, get_3d_box_from_points
+from tower_utils import pixel2Camera, camera2Lidar, find_closest_cluster, get_3d_box_from_points, lidar2Camera, camera2Pixel
 import open3d as o3d
 import time
 import numpy as np
 
 from tracking import tracking_diff
+from config import model_path, video_path, lidar_path, save_path
 
 import sys
 from pathlib import Path
@@ -21,21 +22,18 @@ print(sys.path)
 ORI_RESO = True
 # Model 
 #model = torch.hub.load("/home/2D/weights", "last.pt")  # or yolov5n - yolov5x6, custom
-model = torch.hub.load('yolov5', 'custom', path='/home/Tower_crane_perception/2D/runs/train/exp2/weights/last.pt', source='local')
+model = torch.hub.load('yolov5', 'custom', path=model_path, source='local')
 model.iou = 0.2
-model.conf = 0.7
+model.conf = 0.4
 # Images
-video_path = Path("/home/tower_crane_data/site_data/test4/sync_camera_lidar/hikrobot/")
-lidar_path = Path("/home/tower_crane_data/site_data/test4/sync_camera_lidar/livox/")
 image_list = sorted(video_path.rglob("*.png"), key=lambda a: int(str(a).split("_")[-1].split(".")[0]))
 lidar_list = sorted(lidar_path.rglob("*.pcd"), key=lambda a: int(str(a).split("_")[-1].split(".")[0]))
-save_path = Path("/home/Tower_crane_perception/2D/runs/inference/2d_lidar_livox/")
 save_path.mkdir(exist_ok=True, parents=True)
 
 if ORI_RESO:
     size = (5472, 3648)
 else:
-    size = (1344, 768)
+    size = (1344, 896)
 out = cv2.VideoWriter(str(save_path / "video_comp.avi"), cv2.VideoWriter_fourcc(*'MPEG'), 10, size, True)
 
 # vis = o3d.visualization.Visualizer()
@@ -43,7 +41,7 @@ out = cv2.VideoWriter(str(save_path / "video_comp.avi"), cv2.VideoWriter_fourcc(
 
 
 x_ratio = 5472 / 1344
-y_ratio = 3648 / 768
+y_ratio = 3648 / 896
 last_pred = None
 start_tracking = False
 end_tracking = False
@@ -53,10 +51,10 @@ not_detected_THRE = 20
 
 previsous_pts = []
 threed_boxes = []
-for n, (i_p, l_p) in enumerate(zip(image_list[65:], lidar_list[65:])):
+for n, (i_p, l_p) in enumerate(zip(image_list, lidar_list)):
     print(i_p, l_p)
     img = cv2.imread(str(i_p))
-    img_input = cv2.resize(img, (1344, 768), cv2.INTER_CUBIC)
+    img_input = cv2.resize(img, (1344, 896), cv2.INTER_CUBIC)
     img_input = cv2.cvtColor(img_input, cv2.COLOR_BGR2RGB)
     
     # Inference
@@ -103,6 +101,13 @@ for n, (i_p, l_p) in enumerate(zip(image_list[65:], lidar_list[65:])):
                 #all_cluster_centers = [[32, 6.56, -0.7]]
                 print(all_cluster_centers)
 
+                lidar_centers = np.ones((4, len(all_cluster_centers)), np.float32)
+                lidar_centers[:3, :] = np.transpose(np.array(all_cluster_centers))
+
+                camera_centers = lidar2Camera(lidar_centers)
+                pixel_centers = camera2Pixel(camera_centers)
+
+                print("tto compare", pixel_centers, pixel_pt)
 
 
                 # #print(all_cluster_centers)
