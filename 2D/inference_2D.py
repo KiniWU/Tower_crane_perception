@@ -21,9 +21,9 @@ print(sys.path)
 ORI_RESO = True
 # Model 
 #model = torch.hub.load("/home/2D/weights", "last.pt")  # or yolov5n - yolov5x6, custom
-model = torch.hub.load('yolov5', 'custom', path='/home/Tower_crane_perception/2D/runs/train/exp3/weights/last.pt', source='local')
+model = torch.hub.load('yolov5', 'custom', path='/home/Tower_crane_perception/2D/runs/train/exp2/weights/last.pt', source='local')
 model.iou = 0.2
-model.conf = 0.01
+model.conf = 0.7
 # Images
 video_path = Path("/home/tower_crane_data/site_data/test4/sync_camera_lidar/hikrobot/")
 lidar_path = Path("/home/tower_crane_data/site_data/test4/sync_camera_lidar/livox/")
