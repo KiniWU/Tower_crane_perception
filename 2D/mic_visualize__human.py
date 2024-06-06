@@ -34,7 +34,7 @@ if ORI_RESO:
     size = (5472, 3648)
 else:
     size = (1344, 896)
-out = cv2.VideoWriter(str(save_path / "video_comp_mic_human.avi"), cv2.VideoWriter_fourcc(*'MPEG'), 10, size, True)
+out = cv2.VideoWriter(str(save_path / "video_comp_mic_human.avi"), cv2.VideoWriter_fourcc(*'MPEG'), 2, size, True)
 
 # vis = o3d.visualization.Visualizer()
 # vis.create_window(visible=True) 
