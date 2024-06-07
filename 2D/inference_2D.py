@@ -56,7 +56,7 @@ not_detected_THRE = 20
 
 previsous_pts = []
 threed_boxes = []
-for n, (i_p, l_p) in enumerate(zip(image_list[90:], lidar_list[90:])):
+for n, (i_p, l_p) in enumerate(zip(image_list, lidar_list)):
     print(i_p, l_p)
     img = cv2.imread(str(i_p))
     img_input = cv2.resize(img, (1344, 786), cv2.INTER_CUBIC)
@@ -113,7 +113,7 @@ for n, (i_p, l_p) in enumerate(zip(image_list[90:], lidar_list[90:])):
                 camera_centers = lidar2Camera(lidar_centers)
                 pixel_centers = camera2Pixel(camera_centers)
 
-                print("tto compare", pixel_centers, pixel_pt)
+                # print("tto compare", pixel_centers, pixel_pt)
 
 
                 # #print(all_cluster_centers)
@@ -139,6 +139,8 @@ for n, (i_p, l_p) in enumerate(zip(image_list[90:], lidar_list[90:])):
                 #                     pt2=(int(pred[0, 2]*x_ratio), int(pred[0, 3]*y_ratio)), 
                 #                     color=(0, 0, 255), 
                 #                     thickness=10)
+                img = cv2.resize(img, (1344, 893), cv2.INTER_CUBIC)
+                cv2.imwrite(save_path / (str(n) + ".png"), img)
             else:
                 img = cv2.cvtColor(img_input, cv2.COLOR_RGB2BGR)
                 img = cv2.rectangle(img, 

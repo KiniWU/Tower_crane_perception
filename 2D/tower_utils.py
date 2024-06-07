@@ -125,14 +125,40 @@ def draw_3d_box(img, threed_box, line_thickness = 10, line_color_c = (0,0,255)):
 
     line_thickness = 10
     line_color_c = (0,255,0)
-    print((point0_pixel[0][0], point0_pixel[1][0], point1_pixel[0][0], point1_pixel[1][0]))
-    img = cv2.line(img, (point0_pixel[0][0], point0_pixel[1][0]), (point1_pixel[0][0], point1_pixel[1][0]), line_color_c, line_thickness)
-    img = cv2.line(img, (point1_pixel[0][0], point1_pixel[1][0]), (point2_pixel[0][0], point2_pixel[1][0]), line_color_c, line_thickness)
-    img = cv2.line(img, (point2_pixel[0][0], point2_pixel[1][0]), (point3_pixel[0][0], point3_pixel[1][0]), line_color_c, line_thickness)
-    img = cv2.line(img, (point3_pixel[0][0], point3_pixel[1][0]), (point4_pixel[0][0], point4_pixel[1][0]), line_color_c, line_thickness)
+    print(point0_pixel, point1_pixel, point2_pixel, point3_pixel, point4_pixel, point5_pixel, point6_pixel, point7_pixel)
+    font = cv2.FONT_HERSHEY_SIMPLEX 
+    # fontScale 
+    fontScale = 5
+    
+    # Blue color in BGR 
+    color = (0, 0, 255) 
+    # Line thickness of 2 px 
+    thickness = 3
+    cv2.putText(img, "0", (point0_pixel[0][0], point0_pixel[1][0]), font, fontScale, color, thickness, cv2.LINE_AA)
+    cv2.putText(img, "1", (point1_pixel[0][0], point1_pixel[1][0]), font, fontScale, color, thickness, cv2.LINE_AA)
+    cv2.putText(img, "2", (point2_pixel[0][0], point2_pixel[1][0]), font, fontScale, color, thickness, cv2.LINE_AA)
+    cv2.putText(img, "3", (point3_pixel[0][0], point3_pixel[1][0]), font, fontScale, color, thickness, cv2.LINE_AA)
+    cv2.putText(img, "4", (point4_pixel[0][0], point4_pixel[1][0]), font, fontScale, color, thickness, cv2.LINE_AA)
+    cv2.putText(img, "5", (point5_pixel[0][0], point5_pixel[1][0]), font, fontScale, color, thickness, cv2.LINE_AA)
+    cv2.putText(img, "6", (point6_pixel[0][0], point6_pixel[1][0]), font, fontScale, color, thickness, cv2.LINE_AA)
+    cv2.putText(img, "7", (point7_pixel[0][0], point7_pixel[1][0]), font, fontScale, color, thickness, cv2.LINE_AA)
+
+
+    img = cv2.line(img, (point0_pixel[0][0], point0_pixel[1][0]), (point4_pixel[0][0], point4_pixel[1][0]), line_color_c, line_thickness)
     img = cv2.line(img, (point4_pixel[0][0], point4_pixel[1][0]), (point5_pixel[0][0], point5_pixel[1][0]), line_color_c, line_thickness)
-    img = cv2.line(img, (point5_pixel[0][0], point5_pixel[1][0]), (point6_pixel[0][0], point6_pixel[1][0]), line_color_c, line_thickness)
-    img = cv2.line(img, (point6_pixel[0][0], point6_pixel[1][0]), (point7_pixel[0][0], point7_pixel[1][0]), line_color_c, line_thickness)
-    img = cv2.line(img, (point7_pixel[0][0], point7_pixel[1][0]), (point0_pixel[0][0], point0_pixel[1][0]), line_color_c, line_thickness)
+    img = cv2.line(img, (point5_pixel[0][0], point5_pixel[1][0]), (point1_pixel[0][0], point1_pixel[1][0]), line_color_c, line_thickness)
+    img = cv2.line(img, (point1_pixel[0][0], point1_pixel[1][0]), (point0_pixel[0][0], point0_pixel[1][0]), line_color_c, line_thickness)
+    
+    img = cv2.line(img, (point0_pixel[0][0], point0_pixel[1][0]), (point2_pixel[0][0], point2_pixel[1][0]), line_color_c, line_thickness)
+    img = cv2.line(img, (point2_pixel[0][0], point2_pixel[1][0]), (point6_pixel[0][0], point6_pixel[1][0]), line_color_c, line_thickness)
+    img = cv2.line(img, (point6_pixel[0][0], point6_pixel[1][0]), (point4_pixel[0][0], point4_pixel[1][0]), line_color_c, line_thickness)
+
+    img = cv2.line(img, (point2_pixel[0][0], point2_pixel[1][0]), (point3_pixel[0][0], point3_pixel[1][0]), line_color_c, line_thickness)
+    img = cv2.line(img, (point3_pixel[0][0], point3_pixel[1][0]), (point7_pixel[0][0], point7_pixel[1][0]), line_color_c, line_thickness)
+    img = cv2.line(img, (point7_pixel[0][0], point7_pixel[1][0]), (point6_pixel[0][0], point6_pixel[1][0]), line_color_c, line_thickness)
+    
+    img = cv2.line(img, (point5_pixel[0][0], point5_pixel[1][0]), (point7_pixel[0][0], point7_pixel[1][0]), line_color_c, line_thickness)
+    img = cv2.line(img, (point7_pixel[0][0], point7_pixel[1][0]), (point3_pixel[0][0], point3_pixel[1][0]), line_color_c, line_thickness)
+    img = cv2.line(img, (point3_pixel[0][0], point3_pixel[1][0]), (point1_pixel[0][0], point1_pixel[1][0]), line_color_c, line_thickness)
 
     return img
