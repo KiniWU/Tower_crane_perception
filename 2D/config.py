@@ -1,16 +1,30 @@
 from pathlib import Path
 import numpy as np
 
-
-model_path = Path('/home/Tower_crane_perception/2D/runs/train/exp/weights/last.pt')
-video_path = Path("/home/tower_crane_data/site_data/test4/sync_camera_lidar/hikrobot/")
-video_with_human_path =  Path("/home/Tower_crane_perception/2D/human_detection/demo_vis")
-lidar_path = Path("/home/tower_crane_data/site_data/test4/sync_camera_lidar/livox/")
-save_path = Path("/home/Tower_crane_perception/2D/runs/inference/2d_lidar_livox/")
-
-
 USE_DEVICE = 2 # 0:Upper, 1:Lower, 2:Livox
 ## Upper camera and upper lidar
+
+
+model_v3_path = Path('/home/Tower_crane_perception/2D/runs/train/mic_v3/weights/last.pt')
+model_v1_path = Path('/home/Tower_crane_perception/2D/runs/train/mic_v1/weights/last.pt')
+
+UpperDaHua_video_path = Path("/home/tower_crane_data/site_data/test3/sync_camera_lidar/camera1")
+LowerDaHua_video_path = Path("")
+MVS_video_path = Path("/home/tower_crane_data/site_data/test4/sync_camera_lidar/hikrobot/")
+video_with_human_path =  Path("/home/Tower_crane_perception/2D/human_detection/demo_vis")
+
+LowerOuster_lidar_path = Path("")
+UpperOuster_lidar_path = Path("/home/tower_crane_data/site_data/test3/sync_camera_lidar/ouster1")
+Livox_lidar_path = Path("/home/tower_crane_data/site_data/test4/sync_camera_lidar/livox/")
+
+Livox_save_path = Path("/home/Tower_crane_perception/2D/runs/inference/2d_lidar_livox/")
+UpperDahua_save_path = Path("/home/Tower_crane_perception/2D/runs/inference/2d_lidar_ouster_upper/")
+LowerDahua_save_path = Path("/home/Tower_crane_perception/2D/runs/inference/2d_lidar_ouster_lower/")
+
+Small_human_save_path = Path("/home/Tower_crane_perception/2D/runs/inference/2d_small_human/")
+
+img_size = (3840, 2160)
+
 
 UpperDahua2UpperOuster = np.array([[ -0.00380224, -0.999927, -0.0114549, 0.0468632],
                                 [-0.480837, 0.011872, -0.87673, 0.810458],
@@ -48,18 +62,38 @@ MVS2Livox = np.array([[-0.00949657, 0.0142872, -0.999853, 0.00322139],
                       [0.99995,0.00314306,-0.00945258,0.0338244],
                       [0,                 0,                 0,                 1]])
 if USE_DEVICE == 0:
+    img_size = (3840, 2160)
+    model_path = model_v1_path
+    video_path = UpperDaHua_video_path
+    lidar_path = UpperOuster_lidar_path
+    save_path = UpperDahua_save_path
     Intrinsic = UpperDahua_Intrinsic
     c2L = UpperDahua2UpperOuster
     camera_dist = UpperDahua_dist
 elif USE_DEVICE == 1:
+    img_size = (3840, 2160)
+    model_path = ""
+    video_path = LowerDaHua_video_path
+    lidar_path = LowerOuster_lidar_path
+    save_path = LowerDahua_save_path
     Intrinsic = LowerDahua_Intrinsic
     c2L = LowerDahua2LowerOuster
     camera_dist = LowerDahua_dist
 elif USE_DEVICE == 2:
+    img_size = (5472, 3648)
+    model_path = model_v3_path
+    video_path = MVS_video_path
+    lidar_path = Livox_lidar_path
+    save_path = Livox_save_path
     Intrinsic = MVS_Intrinsic
     c2L = MVS2Livox
     camera_dist = MVS_dist
 else:
+    img_size = None
+    model_path = None
+    video_path = None
+    lidar_path = None
+    save_path = None
     Intrinsic = None
     c2L = None
     camera_dist = None
