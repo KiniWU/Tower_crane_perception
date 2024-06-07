@@ -21,15 +21,16 @@ function [synced_camera_msgs, synced_lidar_msgs, synced_camera_timestamps, synce
         lidar_timestamps(i)  = lidar_msgs{i}.Header.Stamp.Sec + ...
                                    lidar_msgs{i}.Header.Stamp.Nsec * 10^-9;
     end
-
+    camera_init = camera_timestamps(1);
+    lidar_init  = lidar_timestamps(1);
     % trim early timestamps
     if camera_timestamps(1) > lidar_timestamps(1)
-            camera_timestamps = camera_timestamps- camera_timestamps(1);
-            lidar_timestamps  = lidar_timestamps - camera_timestamps(1);
+            camera_timestamps = camera_timestamps- camera_init;
+            lidar_timestamps  = lidar_timestamps - camera_init;
             % lidar_timestamps  = lidar_timestamps(lidar_timestamps>=0.0);
     else
-            camera_timestamps = camera_timestamps- lidar_timestamps(1);
-            lidar_timestamps  = lidar_timestamps - lidar_timestamps(1);
+            camera_timestamps = camera_timestamps- lidar_init;
+            lidar_timestamps  = lidar_timestamps - lidar_init;
             % camera_timestamps = camera_timestamps(camera_timestamps>=0.0);
     end
 
@@ -76,11 +77,17 @@ ouster_pointMsgs = readMessages(ouster_pointMsgs,'DataFormat','struct');
 % ouster2_imuMsgs   = readMessages(ouster2_imuMsgs,'DataFormat','struct');
 
 %%
-[synced_camera_msgs, synced_lidar_msgs, synced_camera_timestamps, synced_lidar_timestamps]...
-                         = syncCameraLidar(camera1_Msgs, ouster_pointMsgs);
+bagMsgs = rosbagreader("/home/haochen/HKCRC/3D_object_detection/data/site_data/test4/raw_data/2024-06-04-11-55-06.bag");
+camera_Msgs = select(bagMsgs,Topic='/hikrobot_camera/rgb_com/compressed');
+lidar_Msgs  = select(bagMsgs,Topic='/livox/lidar/republish');
+camera_Msgs = readMessages(camera_Msgs,'DataFormat','struct');
+lidar_Msgs  = readMessages(lidar_Msgs,'DataFormat','struct');
 %%
-synced_camera_folder = 'sync_camera_lidar/camera1';
-synced_lidar_folder  = 'sync_camera_lidar/ouster1';
+[synced_camera_msgs, synced_lidar_msgs, synced_camera_timestamps, synced_lidar_timestamps]...
+                         = syncCameraLidar(camera_Msgs, lidar_Msgs);
+%%
+synced_camera_folder = 'sync_camera_lidar/camera';
+synced_lidar_folder  = 'sync_camera_lidar/lidar';
 if ~exist(synced_camera_folder,'dir')
     mkdir(synced_camera_folder);
 end
@@ -91,13 +98,13 @@ end
 for i=1:length(synced_lidar_msgs)
     ptCloud = rosReadXYZ(synced_lidar_msgs{i});
     ptCloud = pointCloud(ptCloud);
-    filename = fullfile(synced_lidar_folder,sprintf('ouster1_%d.pcd',i));
+    filename = fullfile(synced_lidar_folder,sprintf('lidar_%d.pcd',i));
     pcwrite(ptCloud,filename);
 end
 
 
 for i=1:length(synced_camera_msgs)
     image_out = rosReadImage(synced_camera_msgs{i});
-    filename = fullfile(synced_camera_folder,sprintf('camera1_%d.png',i));
+    filename = fullfile(synced_camera_folder,sprintf('camera_%d.png',i));
     imwrite(image_out,filename);
 end

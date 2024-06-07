@@ -1,12 +1,17 @@
 % load lidar data
-frame_number = 308;
-lidarFolder = '/home/haochen/HKCRC/3D_object_detection/data/site_data/test3/sync_camera_lidar/ouster1';
+frame_number = 100;
+% lidarFolder = '/home/haochen/HKCRC/3D_object_detection/data/site_data/test3/sync_camera_lidar/ouster1';
+% lidarFilename = fullfile(lidarFolder,sprintf('ouster1_%d.pcd',frame_number));
+% lidarData     = pcread(lidarFilename);
+% threed_boxes_all = load('/home/haochen/HKCRC/3D_object_detection/data/site_data/test3/sync_camera_lidar/threed_boxes.txt');
+% threed_boxes     = threed_boxes_all(frame_number,:);
+
+lidarFolder = '/home/haochen/HKCRC/3D_object_detection/data/site_data/test4/preprocess_data/sync_camera_lidar/livox';
 lidarFilename = fullfile(lidarFolder,sprintf('ouster1_%d.pcd',frame_number));
 lidarData     = pcread(lidarFilename);
 % lidarData        = pcread('ouster1_300.pcd');
-threed_boxes_all = load('/home/haochen/HKCRC/3D_object_detection/data/site_data/test3/sync_camera_lidar/threed_boxes.txt');
+threed_boxes_all = load('/home/haochen/HKCRC/3D_object_detection/data/site_data/test4/preprocess_data/sync_camera_lidar/threed_boxes.txt');
 threed_boxes     = threed_boxes_all(frame_number,:);
-
 % define 3D bounding box
 % x_min = 1.8184e+01;
 % x_max = 2.0467e+01;

@@ -2,14 +2,17 @@
 
 %%
 % 设置点云数据文件夹和视频输出路径
-dataFolder = '/home/haochen/HKCRC/3D_object_detection/data/site_data/test3/sync_camera_lidar/ouster1';
-videoOutputPath = 'ouster1_with_3DBox.avi';
+% dataFolder = '/home/haochen/HKCRC/3D_object_detection/data/site_data/test3/sync_camera_lidar/ouster1';
+% threed_boxes_all = load('/home/haochen/HKCRC/3D_object_detection/data/site_data/test3/sync_camera_lidar/threed_boxes.txt');
+% videoOutputPath = 'ouster1_with_3DBox.avi';
 
-threed_boxes_all = load('/home/haochen/HKCRC/3D_object_detection/data/site_data/test3/sync_camera_lidar/threed_boxes_v0.txt');
-
+dataFolder = '/home/haochen/HKCRC/3D_object_detection/data/site_data/test4/sync_camera_lidar/livox';
+threed_boxes_all = load('/home/haochen/HKCRC/3D_object_detection/data/site_data/test4/sync_camera_lidar/threed_boxes.txt');
+videoOutputPath = 'livox_with_3DBox.avi';
 
 % 创建 VideoWriter 对象
 v = VideoWriter(videoOutputPath);
+v.FrameRate = 1;
 open(v);
 
 % 获取点云文件列表
@@ -18,7 +21,7 @@ lidarFiles = dir(filePattern);
 
 % 循环遍历所有点云文件
 % for k = 1:length(lidarFiles)
-for k = 100:150
+for k = 1:118
     baseFileName = lidarFiles(k).name;
     fullFileName = fullfile(dataFolder, baseFileName);
     
