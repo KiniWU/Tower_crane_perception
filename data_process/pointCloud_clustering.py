@@ -14,7 +14,7 @@ def downsample_point_cloud(pcd, voxel_size=0.05):
     return down_pcd
 
 # Cluster the point cloud
-def cluster_point_cloud(pcd, eps=1.5, min_points=100):
+def cluster_point_cloud(pcd, eps=3, min_points=100):
     with o3d.utility.VerbosityContextManager(o3d.utility.VerbosityLevel.Debug) as cm:
         labels = np.array(pcd.cluster_dbscan(eps=eps, min_points=min_points, print_progress=False))
     return labels
