@@ -92,3 +92,73 @@ def get_3d_box_from_points(pts=[]):
 
 
     return (x_min, x_max, y_min, y_max, z_min, z_max)
+
+def draw_3d_box(img, threed_box, line_thickness = 10, line_color_c = (0,0,255)):
+    (x_min, x_max, y_min, y_max, z_min, z_max) = threed_box
+    point0 = np.array((x_min, y_min, z_min, 1), np.float32).reshape(4, 1)
+    point0_camera = lidar2Camera(point0)
+    point0_pixel = camera2Pixel(point0_camera).astype(int)
+    point1 = np.array((x_min, y_min, z_max, 1), np.float32).reshape(4, 1)
+    point1_camera = lidar2Camera(point1)
+    point1_pixel = camera2Pixel(point1_camera).astype(int)
+
+    point2 = np.array((x_min, y_max, z_min, 1), np.float32).reshape(4, 1)
+    point2_camera = lidar2Camera(point2)
+    point2_pixel = camera2Pixel(point2_camera).astype(int)
+    point3 = np.array((x_min, y_max, z_max, 1), np.float32).reshape(4, 1)
+    point3_camera = lidar2Camera(point3)
+    point3_pixel = camera2Pixel(point3_camera).astype(int)
+
+    point4 = np.array((x_max, y_min, z_min, 1), np.float32).reshape(4, 1)
+    point4_camera = lidar2Camera(point4)
+    point4_pixel = camera2Pixel(point4_camera).astype(int)
+    point5 = np.array((x_max, y_min, z_max, 1), np.float32).reshape(4, 1)
+    point5_camera = lidar2Camera(point5)
+    point5_pixel = camera2Pixel(point5_camera).astype(int)
+
+    point6 = np.array((x_max, y_max, z_min, 1), np.float32).reshape(4, 1)
+    point6_camera = lidar2Camera(point6)
+    point6_pixel = camera2Pixel(point6_camera).astype(int)
+    point7 = np.array((x_max, y_max, z_max, 1), np.float32).reshape(4, 1)
+    point7_camera = lidar2Camera(point7)
+    point7_pixel = camera2Pixel(point7_camera).astype(int)
+
+    line_thickness = 10
+    line_color_c = (0,255,0)
+    print(point0_pixel, point1_pixel, point2_pixel, point3_pixel, point4_pixel, point5_pixel, point6_pixel, point7_pixel)
+    font = cv2.FONT_HERSHEY_SIMPLEX 
+    # fontScale 
+    fontScale = 5
+    
+    # Blue color in BGR 
+    color = (0, 0, 255) 
+    # Line thickness of 2 px 
+    thickness = 3
+    cv2.putText(img, "0", (point0_pixel[0][0], point0_pixel[1][0]), font, fontScale, color, thickness, cv2.LINE_AA)
+    cv2.putText(img, "1", (point1_pixel[0][0], point1_pixel[1][0]), font, fontScale, color, thickness, cv2.LINE_AA)
+    cv2.putText(img, "2", (point2_pixel[0][0], point2_pixel[1][0]), font, fontScale, color, thickness, cv2.LINE_AA)
+    cv2.putText(img, "3", (point3_pixel[0][0], point3_pixel[1][0]), font, fontScale, color, thickness, cv2.LINE_AA)
+    cv2.putText(img, "4", (point4_pixel[0][0], point4_pixel[1][0]), font, fontScale, color, thickness, cv2.LINE_AA)
+    cv2.putText(img, "5", (point5_pixel[0][0], point5_pixel[1][0]), font, fontScale, color, thickness, cv2.LINE_AA)
+    cv2.putText(img, "6", (point6_pixel[0][0], point6_pixel[1][0]), font, fontScale, color, thickness, cv2.LINE_AA)
+    cv2.putText(img, "7", (point7_pixel[0][0], point7_pixel[1][0]), font, fontScale, color, thickness, cv2.LINE_AA)
+
+
+    img = cv2.line(img, (point0_pixel[0][0], point0_pixel[1][0]), (point4_pixel[0][0], point4_pixel[1][0]), line_color_c, line_thickness)
+    img = cv2.line(img, (point4_pixel[0][0], point4_pixel[1][0]), (point5_pixel[0][0], point5_pixel[1][0]), line_color_c, line_thickness)
+    img = cv2.line(img, (point5_pixel[0][0], point5_pixel[1][0]), (point1_pixel[0][0], point1_pixel[1][0]), line_color_c, line_thickness)
+    img = cv2.line(img, (point1_pixel[0][0], point1_pixel[1][0]), (point0_pixel[0][0], point0_pixel[1][0]), line_color_c, line_thickness)
+    
+    img = cv2.line(img, (point0_pixel[0][0], point0_pixel[1][0]), (point2_pixel[0][0], point2_pixel[1][0]), line_color_c, line_thickness)
+    img = cv2.line(img, (point2_pixel[0][0], point2_pixel[1][0]), (point6_pixel[0][0], point6_pixel[1][0]), line_color_c, line_thickness)
+    img = cv2.line(img, (point6_pixel[0][0], point6_pixel[1][0]), (point4_pixel[0][0], point4_pixel[1][0]), line_color_c, line_thickness)
+
+    img = cv2.line(img, (point2_pixel[0][0], point2_pixel[1][0]), (point3_pixel[0][0], point3_pixel[1][0]), line_color_c, line_thickness)
+    img = cv2.line(img, (point3_pixel[0][0], point3_pixel[1][0]), (point7_pixel[0][0], point7_pixel[1][0]), line_color_c, line_thickness)
+    img = cv2.line(img, (point7_pixel[0][0], point7_pixel[1][0]), (point6_pixel[0][0], point6_pixel[1][0]), line_color_c, line_thickness)
+    
+    img = cv2.line(img, (point5_pixel[0][0], point5_pixel[1][0]), (point7_pixel[0][0], point7_pixel[1][0]), line_color_c, line_thickness)
+    img = cv2.line(img, (point7_pixel[0][0], point7_pixel[1][0]), (point3_pixel[0][0], point3_pixel[1][0]), line_color_c, line_thickness)
+    img = cv2.line(img, (point3_pixel[0][0], point3_pixel[1][0]), (point1_pixel[0][0], point1_pixel[1][0]), line_color_c, line_thickness)
+
+    return img

@@ -1,13 +1,16 @@
 import torch
 import cv2
 from pathlib import Path
-from tower_utils import pixel2Camera, camera2Lidar, find_closest_cluster_angle, find_closest_cluster_eucli, get_3d_box_from_points, lidar2Camera, camera2Pixel
+from tower_utils import pixel2Camera, \
+    camera2Lidar, find_closest_cluster_angle, \
+        find_closest_cluster_eucli, get_3d_box_from_points, \
+            lidar2Camera, camera2Pixel, draw_3d_box
 import open3d as o3d
 import time
 import numpy as np
 
 from tracking import tracking_diff
-from config import model_path, video_path, lidar_path, save_path
+from config import model_path, video_path, lidar_path, save_path, img_size
 
 import sys
 from pathlib import Path
@@ -20,28 +23,30 @@ from pointCloud_clustering import pcd_clustering
 print(sys.path)
 
 ORI_RESO = True
+
+
 # Model 
 #model = torch.hub.load("/home/2D/weights", "last.pt")  # or yolov5n - yolov5x6, custom
 model = torch.hub.load('yolov5', 'custom', path=model_path, source='local')
 model.iou = 0.2
-model.conf = 0.4
+model.conf = 0.7
 # Images
 image_list = sorted(video_path.rglob("*.png"), key=lambda a: int(str(a).split("_")[-1].split(".")[0]))
 lidar_list = sorted(lidar_path.rglob("*.pcd"), key=lambda a: int(str(a).split("_")[-1].split(".")[0]))
 save_path.mkdir(exist_ok=True, parents=True)
 
 if ORI_RESO:
-    size = (5472, 3648)
+    size = img_size
 else:
-    size = (1344, 896)
+    size = (1344, 786)
 out = cv2.VideoWriter(str(save_path / "video_comp.avi"), cv2.VideoWriter_fourcc(*'MPEG'), 10, size, True)
 
 # vis = o3d.visualization.Visualizer()
 # vis.create_window(visible=True) 
 
 
-x_ratio = 5472 / 1344
-y_ratio = 3648 / 896
+x_ratio = img_size[0] / 1344
+y_ratio = img_size[1] / 786
 last_pred = None
 start_tracking = False
 end_tracking = False
@@ -54,7 +59,7 @@ threed_boxes = []
 for n, (i_p, l_p) in enumerate(zip(image_list, lidar_list)):
     print(i_p, l_p)
     img = cv2.imread(str(i_p))
-    img_input = cv2.resize(img, (1344, 896), cv2.INTER_CUBIC)
+    img_input = cv2.resize(img, (1344, 786), cv2.INTER_CUBIC)
     img_input = cv2.cvtColor(img_input, cv2.COLOR_BGR2RGB)
     
     # Inference
@@ -128,11 +133,14 @@ for n, (i_p, l_p) in enumerate(zip(image_list, lidar_list)):
                 # vis.capture_screen_image(str(save_path / (str(n) + ".png")))
                 # print(all_cluster_centers[ind], threed_box)
                 # tracking_diff()
-                img = cv2.rectangle(img, 
-                                    pt1=(int(pred[0, 0]*x_ratio), int(pred[0, 1]*y_ratio)), 
-                                    pt2=(int(pred[0, 2]*x_ratio), int(pred[0, 3]*y_ratio)), 
-                                    color=(0, 0, 255), 
-                                    thickness=10)
+                img = draw_3d_box(img=img, threed_box=threed_box, line_color_c=(0, 0, 255), line_thickness=10)
+                # img = cv2.rectangle(img, 
+                #                     pt1=(int(pred[0, 0]*x_ratio), int(pred[0, 1]*y_ratio)), 
+                #                     pt2=(int(pred[0, 2]*x_ratio), int(pred[0, 3]*y_ratio)), 
+                #                     color=(0, 0, 255), 
+                #                     thickness=10)
+                img = cv2.resize(img, (1344, 893), cv2.INTER_CUBIC)
+                cv2.imwrite(save_path / (str(n) + ".png"), img)
             else:
                 img = cv2.cvtColor(img_input, cv2.COLOR_RGB2BGR)
                 img = cv2.rectangle(img, 
