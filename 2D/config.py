@@ -10,7 +10,7 @@ model_v1_path = Path('/home/Tower_crane_perception/2D/runs/train/mic_v1/weights/
 
 UpperDaHua_video_path = Path("/home/tower_crane_data/site_data/test3/sync_camera_lidar/camera1")
 LowerDaHua_video_path = Path("")
-MVS_video_path = Path("/home/tower_crane_data/site_data/test4/sync_camera_lidar/hikrobot/")
+MVS_video_path = Path("/home/tower_crane_data/site_data/test4/sync_camera_lidar/mvs/")
 video_with_human_path =  Path("/home/Tower_crane_perception/2D/human_detection/demo_vis")
 
 LowerOuster_lidar_path = Path("")
