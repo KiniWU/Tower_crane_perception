@@ -32,7 +32,7 @@ hyp:
   copy_paste: 0.0
 epochs: 1000
 batch_size: 2
-imgsz: 640
+imgsz: 1280
 rect: false
 resume: false
 nosave: false
@@ -69,4 +69,4 @@ bbox_interval: -1
 artifact_alias: latest
 ndjson_console: false
 ndjson_file: false
-save_dir: runs/train/exp10
+save_dir: runs/train/exp
