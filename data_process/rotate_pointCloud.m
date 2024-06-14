@@ -1,27 +1,19 @@
-input_file_path  = '/home/haochen/HKCRC/3D_object_detection/data/site_data/test4/...preprocess_data/sync_camera_lidar/hikrobot'; % Replace with the path to your images folder
-output_file_path = '/home/haochen/HKCRC/3D_object_detection/data/site_data/test4/sync_camera_lidar/croped_hikrobot_1_20';
-if ~exist(outputFolder_ROI,'dir')
-    mkdir(outputFolder_ROI);
+input_file_path  = '/home/haochen/HKCRC/tower_crane_data/site_data/test4/preprocess_data/sync_camera_lidar/livox'; % Replace with the path to your images folder
+output_file_path = '/home/haochen/HKCRC/tower_crane_data/site_data/test4/preprocess_data/sync_camera_lidar/rotated_livox';
+if ~exist(output_file_path,'dir')
+    mkdir(output_file_path);
 end
 
-namelist = dir('ouster_501_600\*.pcd');
-len = length(namelist);
-for i = 1:len
-    file_name_1 = namelist(i).name;
-    file_name_2 = fullfile("ouster_501_600\",file_name_1);
-    ptCloud = pcread(file_name_2);
-    
-    xMin = -26.95;     % Minimum value along X-axis.
-    yMin = -89.66;  % Minimum value along Y-axis.
-    zMin = -61.74;    % Minimum value along Z-axis.
-    xMax = 115.60;   % Maximum value along X-axis.
-    yMax = 61.75;   % Maximum value along Y-axis.
-    zMax = 52.23;     % Maximum value along Z-axis.
+namelist = dir(fullfile(input_file_path,'*.pcd'));
+len      = length(namelist);
+R_ib     = eye(3);
 
-    % Define point cloud parameters.
-    roi = [xMin xMax yMin yMax zMin zMax];
-    indices = findPointsInROI(ptCloud,roi);
-    ptCloud_ROI = select(ptCloud,indices);
-    filename_3 = fullfile(outputFolder_ROI,file_name_1);
-    pcwrite(ptCloud_ROI,filename_3);
+for i = 1:len
+    file_name = namelist(i).name;
+    ptCloud   = pcread(fullfile(input_file_path, file_name));
+    pt_b      = ptCloud.Location';
+    pt_i      = R_ib* pt_b;
+    rotated_ptCloud = pointCloud(pt_i');
+    pcwrite(rotated_ptCloud,fullfile(output_file_path,file_name));
+    print("process",i/len)
 end

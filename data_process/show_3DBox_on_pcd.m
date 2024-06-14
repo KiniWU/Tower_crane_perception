@@ -34,7 +34,41 @@ length   = abs(x_max - x_min);
 width    = abs(y_max - y_min);
 height   = abs(z_max - z_min);
 yaw      = 0; % Assuming no rotation for simplicity
-bboxes = [x_center, y_center, z_center, length, width, height, yaw];
+bboxes   = [x_center, y_center, z_center, length, width, height, yaw];
+center     = bboxes(1:3);
+dimensions = bboxes(4:6);
+P1 = [center(1) - dimensions(1)/2, center(2) - dimensions(2)/2, center(3) - dimensions(3)/2];
+P2 = [center(1) + dimensions(1)/2, center(2) - dimensions(2)/2, center(3) - dimensions(3)/2];
+P3 = [center(1) + dimensions(1)/2, center(2) + dimensions(2)/2, center(3) - dimensions(3)/2];
+P4 = [center(1) - dimensions(1)/2, center(2) + dimensions(2)/2, center(3) - dimensions(3)/2];
+P5 = [center(1) - dimensions(1)/2, center(2) - dimensions(2)/2, center(3) + dimensions(3)/2];
+P6 = [center(1) + dimensions(1)/2, center(2) - dimensions(2)/2, center(3) + dimensions(3)/2];
+P7 = [center(1) + dimensions(1)/2, center(2) + dimensions(2)/2, center(3) + dimensions(3)/2];
+P8 = [center(1) - dimensions(1)/2, center(2) + dimensions(2)/2, center(3) + dimensions(3)/2];
+
+% 假设P1, P2, ..., P8是三维框的顶点坐标
+P = [P1;P2;P3;P4;P5;P6;P7;P8]; 
+
+% 计算平面上的单位向量Z
+Z = cross(P(2,:) - P(1,:), P(3,:) - P(1,:)) / norm(cross(P(2,:) - P(1,:), P(3,:) - P(1,:)));
+
+% 计算第一个单位向量X
+X = (P(1,:) + P(2,:)) / 2 - P(3,:);
+
+% 计算第二个单位向量Y
+Y = cross(Z, X); % X是平面上的任意一条线
+
+
+
+% 构建旋转矩阵R
+R = [X; Y; Z];
+
+% 计算旋转角（roll、pitch、yaw）
+alpha = atan2(-Z(2), Z(3));
+beta = asin(Z(1));
+gamma = atan2(-Y(1), X(1));
+
+%%
 
 % 可视化点云
 figure;
