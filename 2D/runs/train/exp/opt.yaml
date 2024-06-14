@@ -31,7 +31,7 @@ hyp:
   mixup: 0.05
   copy_paste: 0.0
 epochs: 1000
-batch_size: 2
+batch_size: 1
 imgsz: 1280
 rect: false
 resume: false

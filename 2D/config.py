@@ -7,6 +7,7 @@ USE_DEVICE = 2 # 0:Upper, 1:Lower, 2:Livox
 
 model_v3_path = Path('/home/Tower_crane_perception/2D/runs/train/mic_v3/weights/last.pt')
 model_v1_path = Path('/home/Tower_crane_perception/2D/runs/train/mic_v1/weights/last.pt')
+model_human_v1_path = Path('/home/Tower_crane_perception/2D/runs/train/exp/weights/last.pt')
 
 UpperDaHua_video_path = Path("/home/tower_crane_data/site_data/test3/sync_camera_lidar/camera1")
 LowerDaHua_video_path = Path("")
