@@ -1,3 +1,4 @@
+%%
 input_file_path  = '/home/haochen/HKCRC/tower_crane_data/site_data/test4/preprocess_data/sync_camera_lidar/livox'; % Replace with the path to your images folder
 output_file_path = '/home/haochen/HKCRC/tower_crane_data/site_data/test4/preprocess_data/sync_camera_lidar/rotated_livox';
 if ~exist(output_file_path,'dir')

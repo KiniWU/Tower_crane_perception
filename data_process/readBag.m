@@ -1,5 +1,5 @@
 %https://www.mathworks.com/matlabcentral/answers/1914840-how-to-convert-bag-file-into-pcd-in-matlab-lidar-data
-bagMsgs = rosbagreader("_2024-05-02-11-09-59_19.bag");
+bagMsgs = rosbagreader("/home/haochen/HKCRC/tower_crane_data/site_data/test3/_2024-05-02-11-09-59_19.bag");
 
 %%
 camera1_Msgs = select(bagMsgs,Topic='/camera1/image_com/compressed');
