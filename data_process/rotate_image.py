@@ -1,8 +1,12 @@
 import cv2
 import os
 
-input_dir = '/home/haochen/HKCRC/tower_crane_data/site_data/test4/sync_camera_lidar/camera'
-output_dir = '/home/haochen/HKCRC/tower_crane_data/site_data/test4/sync_camera_lidar/rotated_camera'
+# input_dir = '/home/haochen/HKCRC/tower_crane_data/site_data/test4/sync_camera_lidar/camera'
+# output_dir = '/home/haochen/HKCRC/tower_crane_data/site_data/test4/sync_camera_lidar/rotated_camera'
+
+input_dir = '/media/haochen/4TB/mic/d455_mid360/2024-06-14-10-29-38_ruian/pic'
+output_dir = '/media/haochen/4TB/mic/d455_mid360/2024-06-14-10-29-38_ruian/pic_rotated'
+
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
