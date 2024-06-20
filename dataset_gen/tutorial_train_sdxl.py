@@ -55,6 +55,7 @@ class MyDataset(torch.utils.data.Dataset):
         item = self.data[idx] 
         text = item["text"]
         image_file = item["image_file"]
+        bbox = item["bbox"]
         
         # read image
         raw_image = Image.open(os.path.join(self.image_root_path, image_file))

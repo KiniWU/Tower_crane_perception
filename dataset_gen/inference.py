@@ -1,20 +1,27 @@
 from diffusers import AutoPipelineForText2Image, StableDiffusionPipeline
 import torch
 from diffusers.utils import load_image
+import random
 
-pipeline = AutoPipelineForText2Image.from_pretrained("/home/weights/sd1-5/runwayml/stable-diffusion-v1-5/", torch_dtype=torch.float32).to("cuda")
-pipeline.load_ip_adapter("/home/weights/h94/IP-Adapter", subfolder="models", weight_name="ip-adapter-full-face_sd15.bin")
+
+pipeline = StableDiffusionPipeline.from_single_file("/home/weights/sd1-5/juggernaut.safetensors", # "/home/weights/sd1-5/runwayml/stable-diffusion-v1-5/", 
+                                                      use_safetensors=True,
+                                                      torch_dtype=torch.float32).to("cuda")
+pipeline.load_ip_adapter("/home/weights/trained_models/ip_adapter_mic_only2/", subfolder="checkpoint-3000/", weight_name="ip_adapter.bin")
 #print(pipeline)
+pipeline.set_ip_adapter_scale(0.48)
 
-image = load_image("/home/Tower_crane_perception/dataset_gen/camera1_36 (2).png")
-generator = torch.Generator(device="cpu").manual_seed(5654)
+image = load_image("/home/tower_crane_data/gen_dataset/333-v2/train/images/hik_11_png.rf.8f08b79aea46d27122c064d8710083b0.jpg")
+seed = random.randint(1, 44455201144)
+print(seed)
+generator = torch.Generator(device="cuda").manual_seed(seed) 
 images = pipeline(
-    prompt='best quality, high quality, construction site',
+    prompt='A Modular Integrated Construction on the construction site',
     ip_adapter_image=image,
-    negative_prompt="monochrome, lowres, bad anatomy, worst quality, low quality",
+    negative_prompt="",
     num_inference_steps=50,
     generator=generator,
-    guidance_scale=3,
+    guidance_scale=5,
 ).images[0]
 images.save("tower_crane.png")
 
