@@ -18,9 +18,70 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent/"data_process"))
 sys.path.append(str(Path(__file__).parent))
 
-from pointCloud_clustering import pcd_clustering
-
 print(sys.path)
+
+
+# Load the PCD file
+def check_lift_start(pos_history,frequency=5,interval=5):
+    frame_num = pos_history.shape[0]
+    if frame_num >= frequency*interval:
+        pixel_dist = np.linalg.norm(pos_history[-1,:]-pos_history[-frequency*interval,:])
+        if pixel_dist > 30:
+            return True
+        else:
+            return False
+    else:
+        return False
+
+def obj_pred_filter(pred,object_class):
+    object_classes = pred[:,5]
+    # print("object_class\n",object_class)
+    obj_index  = np.where( object_classes == object_class)
+    obj_index  = obj_index[0]
+    if len(obj_index) >= 1:
+        print("obj_index\n",obj_index)
+        for index in obj_index:
+            print("obj_pred\n", pred[index,:])
+    return None
+
+def obj_pos_filter():
+    return 
+
+def obj_pred_history(obj_pred_history,pred,obj_class):
+    obj_loss_glag = True
+    for i in np.arange(pred.shape[0]):
+        if pred[i,5] == obj_class:
+            obj_loss_glag = False
+            center_x = (pred[i, 0] + pred[i, 2])/2
+            center_y = (pred[i, 1] + pred[i, 3])/2
+            center   = np.array([[center_x,center_y]])
+            # print(center)
+            # hook_pos_history[n,:] = center 
+            obj_pos_history = np.vstack((obj_pos_history,center))
+
+    if obj_loss_glag == True:
+        # obj_pos_history = np.vstack((obj_pos_history,[[-1,-1]]))
+        obj_pos_history = np.vstack((obj_pos_history,obj_pos_history[-1,:]))
+
+    return obj_pos_history
+
+def obj_pos_history(obj_pos_history,pred,obj_class):
+    obj_loss_glag = True
+    for i in np.arange(pred.shape[0]):
+        if pred[i,5] == obj_class:
+            obj_loss_glag = False
+            center_x = (pred[i, 0] + pred[i, 2])/2
+            center_y = (pred[i, 1] + pred[i, 3])/2
+            center   = np.array([[center_x,center_y]])
+            # print(center)
+            # hook_pos_history[n,:] = center 
+            obj_pos_history = np.vstack((obj_pos_history,center))
+
+    if obj_loss_glag == True:
+        # obj_pos_history = np.vstack((obj_pos_history,[[-1,-1]]))
+        obj_pos_history = np.vstack((obj_pos_history,obj_pos_history[-1,:]))
+
+    return obj_pos_history
 
 ORI_RESO = True
 
@@ -29,10 +90,18 @@ ORI_RESO = True
 #model = torch.hub.load("/home/2D/weights", "last.pt")  # or yolov5n - yolov5x6, custom
 model = torch.hub.load('yolov5', 'custom', path=model_path, source='local')
 model.iou = 0.2
-model.conf = 0.7
+model.conf = 0.5
 # Images
-image_list = sorted(video_path.rglob("*.png"), key=lambda a: int(str(a).split("_")[-1].split(".")[0]))
-lidar_list = sorted(lidar_path.rglob("*.pcd"), key=lambda a: int(str(a).split("_")[-1].split(".")[0]))
+def is_int(s):
+    try:
+        int(s)
+        return True
+    except ValueError:
+        return False
+image_list = sorted(video_path.rglob("*.png"), key=lambda a: int(str(a).split("_")[-1].split(".")[0]) \
+                    if is_int(str(a).split("_")[-1].split(".")[0]) else float('inf'))
+
+save_path  = Path("runs/detect")
 save_path.mkdir(exist_ok=True, parents=True)
 
 if ORI_RESO:
@@ -50,48 +119,55 @@ y_ratio = img_size[1] / 1280
 
 
 previsous_pts = []
-threed_boxes = []
-for n, (i_p, l_p) in enumerate(zip(image_list, lidar_list)):
-    print(i_p, l_p)
-    img = cv2.imread(str(i_p))
-    img_input = cv2.resize(img, (1280, 786), cv2.INTER_CUBIC)
+threed_boxes  = []
+# hook_pos_history   = np.full([200,2],-1)
+hook_pos_history = np.array([0,0])
+mic_box    = np.array([])
+frame_box  = np.array([])
+
+
+for n, i_p in enumerate(image_list):
+    # print(i_p)
+    img       = cv2.imread(str(i_p))
+    img_input = cv2.resize(img, (1280, 1280), cv2.INTER_CUBIC)
     img_input = cv2.cvtColor(img_input, cv2.COLOR_BGR2RGB)
     
     # Inference
-    results = model(img_input, size=1344)
+    results = model(img_input, size=1280)
     # Results
 
     pred = results.pred[0].cpu().numpy()
 
-    pixel_pt = np.array([[(pred[0, 0]+pred[0, 2])*x_ratio/2], 
-                            [(pred[0, 1]+pred[0, 3])*x_ratio/2]])
-    # print(pixel_pt, pred[0, 4])
-    # camera_pt = pixel2Camera(pixel_pt, -20.0)
-    # lidar_pt = camera2Lidar(camera_pt)
-    # print(pixel_pt, camera_pt, lidar_pt)
-    pcd, all_cluster_centers, all_cluster_aligments = pcd_clustering(str(l_p))
-    #all_cluster_centers = [[32, 6.56, -0.7]]
-    print(all_cluster_centers)
+    print("pred\n",pred)
+    # print("hook_pos_history\n",hook_pos_history[n,:])
 
-    lidar_centers = np.ones((4, len(all_cluster_centers)), np.float32)
-    lidar_centers[:3, :] = np.transpose(np.array(all_cluster_centers))
+    # check moving of hook/mic_frame/mic
+    # index = np.where(pred[:,5] == 0)
+    # index = index[0][0]
+    # print(index)
+    obj_pred_filter(pred,0)
+    hook_pos_history = obj_pos_history(hook_pos_history,pred,0) #0-hook;1-mic;2-frame;3-people
+    is_lift_start    = check_lift_start(hook_pos_history)
 
-    camera_centers = lidar2Camera(lidar_centers)
-    pixel_centers = camera2Pixel(camera_centers)
-    ind = find_closest_cluster_eucli(vecs=pixel_centers[:2, :], vec1=pixel_pt)
-    threed_box = get_3d_box_from_points(all_cluster_aligments[all_cluster_aligments[:, 3]==ind])
-    threed_boxes.append(threed_box)
-
-    img = draw_3d_box(img=img, threed_box=threed_box, line_color_c=(0, 0, 255), line_thickness=10)
-    img = cv2.resize(img, (1344, 893), cv2.INTER_CUBIC)
-    cv2.imwrite(save_path / (str(n) + ".png"), img)
-
-    
+    #plotting 
+    for i in np.arange(pred.shape[0]):
+        colors     = [[0,0,0],(0, 255, 0),(0,0,255),(255, 0, 0)]
+        img_input  = cv2.rectangle(img_input, 
+                    pt1=(int(pred[i, 0]), int(pred[i, 1])), 
+                    pt2=(int(pred[i, 2]), int(pred[i, 3])), 
+                    color=colors[int(pred[i,5])], 
+                    thickness=5)
+    if is_lift_start == True:
+        cv2.putText(img_input,'the mic lifting start:',(100,100),cv2.FONT_HERSHEY_COMPLEX,1,(0,0,255),1)
+        
+    img = cv2.resize(img_input, (5472, 3648), cv2.INTER_CUBIC)
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    # cv2.imwrite(save_path / (str(n) + ".png"), img)
     out.write(img)
 
-    if n>200:
+    if n>50:
         break
+print(hook_pos_history)   
 # vis.destroy_window()
 out.release()
-np.savetxt(save_path/'threed_boxes.txt', np.array(threed_boxes), fmt='%1.4e')
 cv2.destroyAllWindows()

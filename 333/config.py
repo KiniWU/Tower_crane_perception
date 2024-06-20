@@ -1,7 +1,7 @@
 from pathlib import Path
 import numpy as np
 
-USE_DEVICE = 2 # 0:Upper, 1:Lower, 2:Livox 3:Ground333
+USE_DEVICE = 3 # 0:Upper, 1:Lower, 2:Livox 3:Ground333
 ## Upper camera and upper lidar
 
 model_Ground333_v1_path = Path('/home/Tower_crane_perception/333/runs/train/333/weights/last.pt')
@@ -9,7 +9,9 @@ model_v3_path = Path('/home/Tower_crane_perception/2D/runs/train/mic_v3/weights/
 model_v1_path = Path('/home/Tower_crane_perception/2D/runs/train/mic_v1/weights/last.pt')
 model_human_v1_path = Path('/home/Tower_crane_perception/2D/runs/train/exp/weights/last.pt')
 
-Ground333_MVS_video_path = Path("/home/tower_crane_data/dataset_333/valid/images")
+Ground333_MVS_video_path = Path("/home/tower_crane_data/dataset_333/2024-06-12-10-55-10_luomazhou/pic")
+# Ground333_MVS_video_path = Path("/home/tower_crane_data/dataset_333/valid/images")
+# Ground333_MVS_video_path = Path("/home/tower_crane_data/dataset_333/2024-06-12-13-28-27_luomazhou/pic")
 UpperDaHua_video_path = Path("/home/tower_crane_data/site_data/test3/sync_camera_lidar/camera1")
 LowerDaHua_video_path = Path("")
 MVS_video_path = Path("/home/tower_crane_data/site_data/test4/sync_camera_lidar/mvs/")
@@ -94,7 +96,7 @@ elif USE_DEVICE == 3:
     img_size = (5472, 3648)
     model_path = model_Ground333_v1_path
     video_path = Ground333_MVS_video_path
-    #lidar_path = Livox_lidar_path
+    lidar_path = Livox_lidar_path
     save_path = Livox_save_path
     Intrinsic = MVS_Intrinsic
     c2L = MVS2Livox
