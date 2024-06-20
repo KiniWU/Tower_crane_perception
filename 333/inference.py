@@ -33,7 +33,55 @@ def check_lift_start(pos_history,frequency=5,interval=5):
     else:
         return False
 
+def obj_pred_filter(pred,object_class):
+    object_classes = pred[:,5]
+    # print("object_class\n",object_class)
+    obj_index  = np.where( object_classes == object_class)
+    obj_index  = obj_index[0]
+    if len(obj_index) >= 1:
+        print("obj_index\n",obj_index)
+        for index in obj_index:
+            print("obj_pred\n", pred[index,:])
+    return None
 
+def obj_pos_filter():
+    return 
+
+def obj_pred_history(obj_pred_history,pred,obj_class):
+    obj_loss_glag = True
+    for i in np.arange(pred.shape[0]):
+        if pred[i,5] == obj_class:
+            obj_loss_glag = False
+            center_x = (pred[i, 0] + pred[i, 2])/2
+            center_y = (pred[i, 1] + pred[i, 3])/2
+            center   = np.array([[center_x,center_y]])
+            # print(center)
+            # hook_pos_history[n,:] = center 
+            obj_pos_history = np.vstack((obj_pos_history,center))
+
+    if obj_loss_glag == True:
+        # obj_pos_history = np.vstack((obj_pos_history,[[-1,-1]]))
+        obj_pos_history = np.vstack((obj_pos_history,obj_pos_history[-1,:]))
+
+    return obj_pos_history
+
+def obj_pos_history(obj_pos_history,pred,obj_class):
+    obj_loss_glag = True
+    for i in np.arange(pred.shape[0]):
+        if pred[i,5] == obj_class:
+            obj_loss_glag = False
+            center_x = (pred[i, 0] + pred[i, 2])/2
+            center_y = (pred[i, 1] + pred[i, 3])/2
+            center   = np.array([[center_x,center_y]])
+            # print(center)
+            # hook_pos_history[n,:] = center 
+            obj_pos_history = np.vstack((obj_pos_history,center))
+
+    if obj_loss_glag == True:
+        # obj_pos_history = np.vstack((obj_pos_history,[[-1,-1]]))
+        obj_pos_history = np.vstack((obj_pos_history,obj_pos_history[-1,:]))
+
+    return obj_pos_history
 
 ORI_RESO = True
 
@@ -97,17 +145,9 @@ for n, i_p in enumerate(image_list):
     # index = np.where(pred[:,5] == 0)
     # index = index[0][0]
     # print(index)
-
-    for i in np.arange(pred.shape[0]):
-        if pred[i,5] == 0:
-            center_x = (pred[i, 0] + pred[i, 2])/2
-            center_y = (pred[i, 1] + pred[i, 3])/2
-            center   = np.array([[center_x,center_y]])
-            print(center)
-            # hook_pos_history[n,:] = center 
-            hook_pos_history = np.vstack((hook_pos_history,center))
-
-    is_lift_start = check_lift_start(hook_pos_history)
+    obj_pred_filter(pred,0)
+    hook_pos_history = obj_pos_history(hook_pos_history,pred,0) #0-hook;1-mic;2-frame;3-people
+    is_lift_start    = check_lift_start(hook_pos_history)
 
     #plotting 
     for i in np.arange(pred.shape[0]):
@@ -125,7 +165,7 @@ for n, i_p in enumerate(image_list):
     # cv2.imwrite(save_path / (str(n) + ".png"), img)
     out.write(img)
 
-    if n>200:
+    if n>50:
         break
 print(hook_pos_history)   
 # vis.destroy_window()
