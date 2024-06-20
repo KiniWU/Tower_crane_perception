@@ -28,7 +28,15 @@ else:
 # Dataset
 class MyDataset(torch.utils.data.Dataset):
 
-    def __init__(self, json_file, tokenizer, size=512, t_drop_rate=0.05, i_drop_rate=0.05, ti_drop_rate=0.05, image_root_path=""):
+    def __init__(self, 
+                 json_file, 
+                 tokenizer, 
+                 size=512, 
+                 t_drop_rate=0.05, 
+                 i_drop_rate=0.05, 
+                 ti_drop_rate=0.05, 
+                 image_root_path="", 
+                 bg_im_path = "/home/Tower_crane_perception/dataset_gen/generated_images/"):
         super().__init__()
 
         self.tokenizer = tokenizer
@@ -47,6 +55,8 @@ class MyDataset(torch.utils.data.Dataset):
             transforms.Normalize([0.5], [0.5]),
         ])
         self.clip_image_processor = CLIPImageProcessor()
+
+        self.bg_im_files = list(Path(bg_im_path).rglob("*.png"))
         
     def __getitem__(self, idx):
         item = self.data[idx] 
@@ -54,15 +64,31 @@ class MyDataset(torch.utils.data.Dataset):
         image_file = item["image_file"]
         bbox = item["bbox"] # x_min, y_min, x_max, y_max
         x_min, y_min, x_max, y_max = bbox
+        #print(x_min, y_min, x_max, y_max)
         
         # read image
-        raw_image = Image.open(os.path.join(self.image_root_path, image_file)) # width, height
-        image = self.transform(raw_image.convert("RGB"))
+        raw_image = Image.open(image_file) # width, height
+        ori_width, ori_height = raw_image.size
+        x_ratio = ori_width/1024
+        y_ratio = ori_height/1024
+        
 
         # change it to mic part
-        mic_image = raw_image[x_min:x_max, y_min:y_max]
-        mic_clip_image = self.clip_image_processor(images=mic_image, return_tensors="pt").pixel_values
+        mic_image = raw_image.crop((x_min, y_min, x_max, y_max))
+        mic_image = mic_image.resize((int((x_max-x_min)/x_ratio), int((y_max-y_min)/y_ratio)))
+        #mic_image.save("visualize.png")
+        mic_clip_image = self.clip_image_processor(images=raw_image, return_tensors="pt").pixel_values
+
         
+        rand_background = random.random()
+        if rand_background > 0.8:
+            bg_im = Image.open(random.choice(self.bg_im_files))
+            Image.Image.paste(bg_im, mic_image, (int(x_min/x_ratio), int(y_min/y_ratio)))
+            #bg_im.save("visualize.png")
+            
+            #raw_image = bg_im
+        
+        image = self.transform(raw_image.convert("RGB"))
         # drop
         drop_image_embed = 0
         rand_num = random.random()
@@ -213,6 +239,12 @@ def parse_args():
         default=1e-4,
         help="Learning rate to use.",
     )
+    parser.add_argument(
+        "--i_drop_rate",
+        type=float,
+        default=0.05,
+        help="Ratio to not use the image prompt.",
+    )
     parser.add_argument("--weight_decay", type=float, default=1e-2, help="Weight decay to use.")
     parser.add_argument("--num_train_epochs", type=int, default=100)
     parser.add_argument(
@@ -342,7 +374,7 @@ def main():
     optimizer = torch.optim.AdamW(params_to_opt, lr=args.learning_rate, weight_decay=args.weight_decay)
     
     # dataloader
-    train_dataset = MyDataset(args.data_json_file, tokenizer=tokenizer, size=args.resolution, image_root_path=args.data_root_path)
+    train_dataset = MyDataset(args.data_json_file, tokenizer=tokenizer, size=args.resolution, i_drop_rate=args.i_drop_rate, image_root_path=args.data_root_path)
     train_dataloader = torch.utils.data.DataLoader(
         train_dataset,
         shuffle=True,
