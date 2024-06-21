@@ -22,10 +22,12 @@ print(sys.path)
 
 
 # Load the PCD file
-def check_lift_start(pos_history,frequency=5,interval=5):
-    frame_num = pos_history.shape[0]
+def check_lift_start(pred_history,frequency=5,interval=5):
+    frame_num = pred_history.shape[0]
     if frame_num >= frequency*interval:
-        pixel_dist = np.linalg.norm(pos_history[-1,:]-pos_history[-frequency*interval,:])
+        current_pixel_pos   = pred2pos(pred_history[-1,:])
+        prev_pixel_pos      = pred2pos(pred_history[-frequency*interval,:])
+        pixel_dist = np.linalg.norm(current_pixel_pos-prev_pixel_pos)
         if pixel_dist > 30:
             return True
         else:
@@ -33,7 +35,8 @@ def check_lift_start(pos_history,frequency=5,interval=5):
     else:
         return False
 
-def obj_pred_filter(obj_pos_history,pred,object_class):
+def obj_multi_filter(obj_pred_history,pred,object_class):
+    #deal multiple detections of one object in current frame
     object_classes = pred[:,5]
     # print("object_class\n",object_class)
     obj_index  = np.where( object_classes == object_class)
@@ -43,22 +46,34 @@ def obj_pred_filter(obj_pos_history,pred,object_class):
         center_dist = []
         for index in obj_index:
             print("obj_pred\n", pred[index,:])
-            center_x = (pred[index, 0] + pred[index, 2])/2
-            center_y = (pred[index, 1] + pred[index, 3])/2
-            current_center = np.array([[center_x,center_y]])
-            last_center    = obj_pos_history[-1,:]
-            center_dist    = center_dist.append(np.linalg.norm(current_center-last_center))
+            # center_x = (pred[index, 0] + pred[index, 2])/2
+            # center_y = (pred[index, 1] + pred[index, 3])/2
+            # current_center = np.array([[center_x,center_y]])
+            current_center = pred2pos(pred[index,:])
+            last_center    = pred2pos(obj_pred_history[-1,:])
+            center_dist.append(np.linalg.norm(current_center-last_center))
         
         min_dist  = min(center_dist)
         min_index = center_dist.index(min_dist)
+        print("min_index",min_index)
         for index in obj_index:
-            if index != min_index:
-                pred = np.delete(pred, obj_index[index], axis=0)
+            if index != obj_index[min_index]:
+                print("index",index)
+                pred = np.delete(pred, index, axis=0)
 
     return pred
 
-def obj_pos_filter():
-    return 
+def obj_loss_filter(obj_pred_history,pred,object_class):
+    #deal with loss of detection in current frame
+    obj_loss_flag = True 
+    for i in np.arange(pred.shape[0]):
+        if pred[i,5] == object_class:
+            obj_loss_flag = False
+
+    if obj_loss_flag == True:
+        pred = np.vstack((pred,obj_pred_history[-1,:]))
+
+    return pred
 
 def obj_pred_history(obj_pred_history,pred,obj_class):
     obj_loss_flag = True
@@ -78,9 +93,7 @@ def obj_pos_history(obj_pos_history,pred,obj_class):
     for i in np.arange(pred.shape[0]):
         if pred[i,5] == obj_class:
             obj_loss_flag = False
-            center_x = (pred[i, 0] + pred[i, 2])/2
-            center_y = (pred[i, 1] + pred[i, 3])/2
-            center   = np.array([[center_x,center_y]])
+            center   = pred2pos(pred[i,:])
             # print(center)
             # hook_pos_history[n,:] = center 
             obj_pos_history = np.vstack((obj_pos_history,center))
@@ -90,6 +103,12 @@ def obj_pos_history(obj_pos_history,pred,obj_class):
         obj_pos_history = np.vstack((obj_pos_history,obj_pos_history[-1,:]))
 
     return obj_pos_history
+
+def pred2pos(pred):
+    center_x = (pred[0] + pred[2])/2
+    center_y = (pred[1] + pred[3])/2
+    pos      = np.array([[center_x,center_y]])
+    return pos
 
 ORI_RESO = True
 
@@ -131,8 +150,10 @@ threed_boxes  = []
 
 hook_pos_history  = np.array([0,0])
 mic_pos_history   = np.array([0,0])
-frame_pos_history  = np.array([0,0])
+frame_pos_history = np.array([0,0])
 hook_pred_history = np.array([0,0,0,0,0,0])
+mic_pred_history  = np.array([0,0,0,0,0,0])
+frame_pred_history= np.array([0,0,0,0,0,0])
 is_lift_start     = False
 
 for n, i_p in enumerate(image_list):
@@ -151,13 +172,23 @@ for n, i_p in enumerate(image_list):
     # print("hook_pos_history\n",hook_pos_history[n,:])
 
     # check moving of hook/mic_frame/mic
-    pred = obj_pred_filter(obj_pos_history,pred,0)
-    hook_pos_history  = obj_pos_history(hook_pos_history,pred,0) #0-hook;1-mic;2-frame;3-people
-    mic_pos_history   = obj_pos_history(mic_pos_history,pred,1) #0-hook;1-mic;2-frame;3-people
-    frame_pos_history = obj_pos_history(frame_pos_history,pred,2) #0-hook;1-mic;2-frame;3-people
-    is_hook_start     = check_lift_start(hook_pos_history)
-    is_mic_start      = check_lift_start(mic_pos_history)
-    is_frame_start    = check_lift_start(frame_pos_history)
+    pred = obj_multi_filter(hook_pred_history,pred,0)
+    pred = obj_multi_filter(mic_pred_history,pred,1)
+    pred = obj_multi_filter(frame_pred_history,pred,2)
+    
+    pred = obj_loss_filter(hook_pred_history,pred,0)
+    pred = obj_loss_filter(mic_pred_history,pred,1)
+    pred = obj_loss_filter(frame_pred_history,pred,2)
+    # hook_pos_history  = obj_pos_history(hook_pos_history,pred,0) #0-hook;1-mic;2-frame;3-people
+    # mic_pos_history   = obj_pos_history(mic_pos_history,pred,1) #0-hook;1-mic;2-frame;3-people
+    # frame_pos_history = obj_pos_history(frame_pos_history,pred,2) #0-hook;1-mic;2-frame;3-people
+    hook_pred_history  = obj_pred_history(hook_pred_history,pred,0) #0-hook;1-mic;2-frame;3-people
+    mic_pred_history   = obj_pred_history(mic_pred_history,pred,1) #0-hook;1-mic;2-frame;3-people
+    frame_pred_history = obj_pred_history(frame_pred_history,pred,2) #0-hook;1-mic;2-frame;3-people
+
+    is_hook_start     = check_lift_start(hook_pred_history)
+    is_mic_start      = check_lift_start(mic_pred_history)
+    is_frame_start    = check_lift_start(frame_pred_history)
 
     if (is_hook_start and is_mic_start) or (is_hook_start and is_frame_start) or (is_mic_start and is_frame_start):
         is_lift_start = True
