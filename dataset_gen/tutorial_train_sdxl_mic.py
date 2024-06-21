@@ -53,15 +53,21 @@ class MyDataset(torch.utils.data.Dataset):
         
     def __getitem__(self, idx):
         item = self.data[idx] 
-        text = item["text"]
+        text = "A Modular Integrated Construction lift on the construction site" #item["text"]
         image_file = item["image_file"]
         bbox = item["bbox"]
-        
+        x_min, y_min, x_max, y_max = bbox
+
         # read image
         raw_image = Image.open(os.path.join(self.image_root_path, image_file))
         
+        
         # original size
         original_width, original_height = raw_image.size
+        original_width = int(original_width/3)
+        original_height = int(original_height/3)
+        raw_image = raw_image.resize((original_width, original_height))
+
         original_size = torch.tensor([original_height, original_width])
         
         image_tensor = self.transform(raw_image.convert("RGB"))
@@ -81,7 +87,8 @@ class MyDataset(torch.utils.data.Dataset):
         )
         crop_coords_top_left = torch.tensor([top, left]) 
 
-        clip_image = self.clip_image_processor(images=raw_image, return_tensors="pt").pixel_values
+        mic_image = raw_image.crop((x_min, y_min, x_max, y_max))
+        clip_image = self.clip_image_processor(images=mic_image, return_tensors="pt").pixel_values
         
         # drop
         drop_image_embed = 0
@@ -384,7 +391,7 @@ def main():
         weight_dtype = torch.float16
     elif accelerator.mixed_precision == "bf16":
         weight_dtype = torch.bfloat16
-    #unet.to(accelerator.device, dtype=weight_dtype)
+    unet.to(accelerator.device, dtype=weight_dtype)
     vae.to(accelerator.device) # use fp32
     text_encoder.to(accelerator.device, dtype=weight_dtype)
     text_encoder_2.to(accelerator.device, dtype=weight_dtype)
@@ -407,6 +414,7 @@ def main():
     # Prepare everything with our `accelerator`.
     ip_adapter, optimizer, train_dataloader = accelerator.prepare(ip_adapter, optimizer, train_dataloader)
     
+    unet.enable_xformers_memory_efficient_attention()
     global_step = 0
     for epoch in range(0, args.num_train_epochs):
         begin = time.perf_counter()
@@ -416,6 +424,7 @@ def main():
                 # Convert images to latent space
                 with torch.no_grad():
                     # vae of sdxl should use fp32
+                    #with torch.autocast(device_type='cuda', dtype=torch.float16):
                     latents = vae.encode(batch["images"].to(accelerator.device, dtype=torch.float32)).latent_dist.sample()
                     latents = latents * vae.config.scaling_factor
                     latents = latents.to(accelerator.device, dtype=weight_dtype)
@@ -462,15 +471,18 @@ def main():
                 add_time_ids = torch.cat(add_time_ids, dim=1).to(accelerator.device, dtype=weight_dtype)
                 unet_added_cond_kwargs = {"text_embeds": pooled_text_embeds, "time_ids": add_time_ids}
                 
-                noise_pred = ip_adapter(noisy_latents, timesteps, text_embeds, unet_added_cond_kwargs, image_embeds)
+                # del latents, image_embeds_, encoder_output, encoder_output_2
+                # torch.cuda.empty_cache()
+                with torch.autocast(device_type='cuda', dtype=torch.float16):
+                    noise_pred = ip_adapter(noisy_latents, timesteps, text_embeds, unet_added_cond_kwargs, image_embeds)
+                    
+                    loss = F.mse_loss(noise_pred.float(), noise.float(), reduction="mean")
                 
-                loss = F.mse_loss(noise_pred.float(), noise.float(), reduction="mean")
-            
-                # Gather the losses across all processes for logging (if we use distributed training).
-                avg_loss = accelerator.gather(loss.repeat(args.train_batch_size)).mean().item()
-                
-                # Backpropagate
-                accelerator.backward(loss)
+                    # Gather the losses across all processes for logging (if we use distributed training).
+                    avg_loss = accelerator.gather(loss.repeat(args.train_batch_size)).mean().item()
+                    
+                    # Backpropagate
+                    accelerator.backward(loss)
                 optimizer.step()
                 optimizer.zero_grad()
 
