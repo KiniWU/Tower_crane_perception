@@ -162,3 +162,18 @@ def draw_3d_box(img, threed_box, line_thickness = 10, line_color_c = (0,0,255)):
     img = cv2.line(img, (point3_pixel[0][0], point3_pixel[1][0]), (point1_pixel[0][0], point1_pixel[1][0]), line_color_c, line_thickness)
 
     return img
+
+
+def find_dis_from_depth(bbox, depth_im):
+    """
+    bbox: the boudning box of the object in 2D RGB image, x_min, y_min, x_max, y_max
+    depth_im: cv2 unint8 image of depth
+    """
+
+    depth_area = depth_im[bbox[1]:bbox[3], bbox[0]:bbox[2]]
+
+    depth_values = depth_area[np.where(depth_area>0)]
+
+    dis = np.median(depth_values)
+
+    return dis
