@@ -25,6 +25,7 @@ if is_torch2_available():
 else:
     from ip_adapter.attention_processor import IPAttnProcessor, AttnProcessor
 
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 # Dataset
 class MyDataset(torch.utils.data.Dataset):
@@ -61,11 +62,10 @@ class MyDataset(torch.utils.data.Dataset):
         # read image
         raw_image = Image.open(os.path.join(self.image_root_path, image_file))
         
-        
         # original size
         original_width, original_height = raw_image.size
-        original_width = int(original_width/3)
-        original_height = int(original_height/3)
+        original_width = 1024 # int(original_width/4)
+        original_height = 1024 # int(original_height/4)
         raw_image = raw_image.resize((original_width, original_height))
 
         original_size = torch.tensor([original_height, original_width])
@@ -82,6 +82,9 @@ class MyDataset(torch.utils.data.Dataset):
         else:
             top = np.random.randint(0, delta_h + 1)
             left = np.random.randint(0, delta_w + 1)
+
+        top = 0
+        left = 0
         image = transforms.functional.crop(
             image_tensor, top=top, left=left, height=self.size, width=self.size
         )

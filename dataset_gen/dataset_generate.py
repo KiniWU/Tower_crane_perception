@@ -27,12 +27,14 @@ for i_p in images:
 
                 y_min = int((bbox[1] - bbox[3]/2) * height)
                 y_max = int((bbox[1] + bbox[3]/2) * height)
+                image_cropped = image[y_min:y_max, x_min:x_max]
                 im = cv2.rectangle(image, (x_min, y_min), (x_max, y_max), (0,255,0), 10)
-                cv2.imwrite(cropped_images_path / i_p.name, im)
+                
+                cv2.imwrite(cropped_images_path / i_p.name, image_cropped)
 
                 # print(x_min, y_min, x_max, y_max)
 
-                one_anno = {"image_file": str(i_p), "text": "A MIC on the constuction site", "bbox": [x_min, y_min, x_max, y_max]}
+                one_anno = {"image_file": str(i_p), "text": "A Modular Integrated Construction lift on the construction site", "bbox": [x_min, y_min, x_max, y_max]}
                 dataset.append(one_anno)
 
 

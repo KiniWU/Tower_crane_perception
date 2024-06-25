@@ -10,7 +10,7 @@ mapping = {k: v for k, v in zip(names_1, names_2)}
 
 import torch
 from safetensors.torch import load_file
-ckpt = "/home/weights/trained_models/ip_adapter_sdxl_mic_only/checkpoint-25000/model.safetensors"
+ckpt = "/home/weights/trained_models/ip_adapter_sdxl_mic_only/checkpoint-20000/model.safetensors"
 sd = load_file(ckpt)
 image_proj_sd = {}
 ip_sd = {}
@@ -20,4 +20,4 @@ for k in sd:
     elif "_ip." in k: 
         ip_sd[k.replace("adapter_modules.", "")] = sd[k] 
 
-torch.save({"image_proj": image_proj_sd, "ip_adapter": ip_sd}, "/home/weights/trained_models/ip_adapter_sdxl_mic_only/checkpoint-25000/ip_adapter.bin")
+torch.save({"image_proj": image_proj_sd, "ip_adapter": ip_sd}, "/home/weights/trained_models/ip_adapter_sdxl_mic_only/checkpoint-20000/ip_adapter.bin")
