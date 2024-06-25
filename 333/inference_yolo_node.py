@@ -28,22 +28,34 @@ def detect(model,img,std_img_size=1280):
     '''
     @note: 需要resize以及完成识别以及绘制的工作
     @input: img,从ROS回调image_callback中接收的图像（IMAGE_WIDTH*IMAGE_HEIGHT），
+            model:        yolo model
+            std_img_size: yolo model required img size
     @return: bool, 返回是否检测到目标的bool类型
     '''
-    
+    img_size = img.shape
+    IMAGE_WIDTH  = img_size[1]
+    IMAGE_HEIGHT = img_size[0]
+    WIDTH_RATIO  = IMAGE_WIDTH/std_img_size
+    HEIGHT_RATIO = IMAGE_HEIGHT/std_img_size
+    #convert image to yolo model required format
     img = cv2.resize(img, (std_img_size, std_img_size), cv2.INTER_CUBIC)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    img_size = img.shape
 
-    # yolo inference results
+    # yolo inference results,pred = [xmin ymin xmax ymax confidence class name]
     results = model(img, size=std_img_size)
     pred = results.pred[0].cpu().numpy()
+    # convert yolo prediction from yolo reqired img size to raw image size
+    pred[:,0] = pred[:,0]*WIDTH_RATIO
+    pred[:,2] = pred[:,2]*WIDTH_RATIO
+    pred[:,1] = pred[:,1]*HEIGHT_RATIO
+    pred[:,3] = pred[:,3]*HEIGHT_RATIO
 
-    img = cv2.resize(img, (img_size[1], img_size[0]), cv2.INTER_CUBIC)
+    # convert image to original format after yolo reference 
+    img = cv2.resize(img, (IMAGE_WIDTH, IMAGE_HEIGHT), cv2.INTER_CUBIC)
     img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
 
-    # 并在识别完成后发布这个图像
-    publish_image(im1)
+    # publish image
+    publish_image(img)
 
 def tracking():
     '''

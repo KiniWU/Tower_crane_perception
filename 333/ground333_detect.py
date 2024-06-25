@@ -63,30 +63,30 @@ for n, i_p in enumerate(image_list):
     img  = cv2.imread(str(i_p))
     img_size = img.shape
     print(img_size)
-    pred,img = g3u.ground333_detect(model, img, 1280)
+    pred,img = g3u.ground333_detect_new(model, img, 1280)
 
     print("pred\n",pred)
     # print("hook_pos_history\n",hook_pos_history[n,:])
 
     # check moving of hook/mic_frame/mic
-    pred = g3u.obj_multi_filter(hook_pred_history, pred,0)
-    pred = g3u.obj_multi_filter(mic_pred_history,  pred,1)
-    pred = g3u.obj_multi_filter(frame_pred_history,pred,2)
+    # pred = g3u.obj_multi_filter(hook_pred_history, pred,0)
+    # pred = g3u.obj_multi_filter(mic_pred_history,  pred,1)
+    # pred = g3u.obj_multi_filter(frame_pred_history,pred,2)
     
-    pred = g3u.obj_loss_filter(hook_pred_history, pred,0)
-    pred = g3u.obj_loss_filter(mic_pred_history,  pred,1)
-    pred = g3u.obj_loss_filter(frame_pred_history,pred,2)
+    # pred = g3u.obj_loss_filter(hook_pred_history, pred,0)
+    # pred = g3u.obj_loss_filter(mic_pred_history,  pred,1)
+    # pred = g3u.obj_loss_filter(frame_pred_history,pred,2)
 
-    hook_pred_history  = g3u.obj_pred_history(hook_pred_history, pred,0) #0-hook;1-mic;2-frame;3-people
-    mic_pred_history   = g3u.obj_pred_history(mic_pred_history,  pred,1) #0-hook;1-mic;2-frame;3-people
-    frame_pred_history = g3u.obj_pred_history(frame_pred_history,pred,2) #0-hook;1-mic;2-frame;3-people
+    # hook_pred_history  = g3u.obj_pred_history(hook_pred_history, pred,0) #0-hook;1-mic;2-frame;3-people
+    # mic_pred_history   = g3u.obj_pred_history(mic_pred_history,  pred,1) #0-hook;1-mic;2-frame;3-people
+    # frame_pred_history = g3u.obj_pred_history(frame_pred_history,pred,2) #0-hook;1-mic;2-frame;3-people
 
-    is_hook_start     = g3u.check_lift_start(hook_pred_history)
-    is_mic_start      = g3u.check_lift_start(mic_pred_history)
-    is_frame_start    = g3u.check_lift_start(frame_pred_history)
+    # is_hook_start     = g3u.check_lift_start(hook_pred_history)
+    # is_mic_start      = g3u.check_lift_start(mic_pred_history)
+    # is_frame_start    = g3u.check_lift_start(frame_pred_history)
 
-    if (is_hook_start and is_mic_start) or (is_hook_start and is_frame_start) or (is_mic_start and is_frame_start):
-        is_lift_start = True
+    # if (is_hook_start and is_mic_start) or (is_hook_start and is_frame_start) or (is_mic_start and is_frame_start):
+    #     is_lift_start = True
         # print(is_lift_start)
 
     #plotting 
@@ -100,8 +100,8 @@ for n, i_p in enumerate(image_list):
     if is_lift_start == True:
         cv2.putText(img,'the mic lifting start:',(100,100),cv2.FONT_HERSHEY_COMPLEX,1,(0,0,255),1)
         
-    img = cv2.resize(img, (5472, 3648), cv2.INTER_CUBIC)
-    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    # img = cv2.resize(img, (5472, 3648), cv2.INTER_CUBIC)
+    # img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
     # cv2.imwrite(save_path / (str(n) + ".png"), img)
     out.write(img)
 

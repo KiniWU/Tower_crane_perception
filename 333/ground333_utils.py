@@ -121,6 +121,30 @@ def ground333_detect(model, img, std_img_size=1280):
     # img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
     return pred,img
 
+def ground333_detect_new(model, img, std_img_size=1280):
+    img_size = img.shape
+    IMAGE_WIDTH  = img_size[1]
+    IMAGE_HEIGHT = img_size[0]
+    WIDTH_RATIO  = IMAGE_WIDTH/std_img_size
+    HEIGHT_RATIO = IMAGE_HEIGHT/std_img_size
+    #convert image to yolo model required format
+    img = cv2.resize(img, (std_img_size, std_img_size), cv2.INTER_CUBIC)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+    # yolo inference results,pred = [xmin ymin xmax ymax confidence class name]
+    results = model(img, size=std_img_size)
+    pred = results.pred[0].cpu().numpy()
+    # convert yolo prediction from yolo reqired img size to raw image size
+    pred[:,0] = pred[:,0]*WIDTH_RATIO
+    pred[:,2] = pred[:,2]*WIDTH_RATIO
+    pred[:,1] = pred[:,1]*HEIGHT_RATIO
+    pred[:,3] = pred[:,3]*HEIGHT_RATIO
+
+    # convert image to original format after yolo reference 
+    img = cv2.resize(img, (IMAGE_WIDTH, IMAGE_HEIGHT), cv2.INTER_CUBIC)
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    return pred,img
+
 def ground333_tracking():
     pass
     return
