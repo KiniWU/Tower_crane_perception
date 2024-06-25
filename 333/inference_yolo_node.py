@@ -24,12 +24,23 @@ IMAGE_WIDTH=5472
 IMAGE_HEIGHT=3648
 ros_image=0
 
-def detect(img):
+def detect(model,img,std_img_size=1280):
     '''
     @note: 需要resize以及完成识别以及绘制的工作
     @input: img,从ROS回调image_callback中接收的图像（IMAGE_WIDTH*IMAGE_HEIGHT），
     @return: bool, 返回是否检测到目标的bool类型
     '''
+    
+    img = cv2.resize(img, (std_img_size, std_img_size), cv2.INTER_CUBIC)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img_size = img.shape
+
+    # yolo inference results
+    results = model(img, size=std_img_size)
+    pred = results.pred[0].cpu().numpy()
+
+    img = cv2.resize(img, (img_size[1], img_size[0]), cv2.INTER_CUBIC)
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
 
     # 并在识别完成后发布这个图像
     publish_image(im1)
