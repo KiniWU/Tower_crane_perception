@@ -98,7 +98,7 @@ for n, (i_p, l_p) in enumerate(zip(image_list, lidar_list)):
             # twod_box = []
             if ORI_RESO:
                 pixel_pt = np.array([[(pred[0, 0]+pred[0, 2])*x_ratio/2], 
-                                     [(pred[0, 1]+pred[0, 3])*x_ratio/2]])
+                                     [(pred[0, 1]+pred[0, 3])*y_ratio/2]])
                 # print(pixel_pt, pred[0, 4])
                 # camera_pt = pixel2Camera(pixel_pt, -20.0)
                 # lidar_pt = camera2Lidar(camera_pt)

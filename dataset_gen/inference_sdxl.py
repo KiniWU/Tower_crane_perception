@@ -7,9 +7,9 @@ from pathlib import Path
 pipeline = StableDiffusionXLPipeline.from_pretrained("/home/weights/sdxl_1_0", # "/home/weights/sd1-5/runwayml/stable-diffusion-v1-5/", 
                                                       #use_safetensors=True,
                                                       torch_dtype=torch.float16).to("cuda")
-save_path = Path("/home/tower_crane_data/gen_dataset/generated_mic2/")
+save_path = Path("/home/tower_crane_data/gen_dataset/generated_mic/")
 save_path.mkdir(parents=True, exist_ok=True)
-pipeline.load_ip_adapter("/home/weights/trained_models/ip_adapter_sdxl_mic_only", subfolder="checkpoint-20000/", weight_name="ip_adapter.bin")
+pipeline.load_ip_adapter("/home/weights/trained_models/ip_adapter_sdxl_mic_only", subfolder="checkpoint-15000/", weight_name="ip_adapter.bin")
 #print(pipeline)
 pipeline.set_ip_adapter_scale(1.0)
 
