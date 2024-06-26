@@ -21,6 +21,8 @@ import gc
 import logging
 import math
 import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+
 import random
 import shutil
 from contextlib import nullcontext
@@ -29,6 +31,7 @@ from pathlib import Path
 import accelerate
 import datasets
 import numpy as np
+
 import torch
 import torch.nn.functional as F
 import torch.utils.checkpoint
@@ -53,6 +56,8 @@ from diffusers.utils.hub_utils import load_or_create_model_card, populate_model_
 from diffusers.utils.import_utils import is_torch_npu_available, is_xformers_available
 from diffusers.utils.torch_utils import is_compiled_module
 
+from accelerate.utils import write_basic_config
+write_basic_config()
 
 # Will error if the minimal version of diffusers is not installed. Remove at your own risks.
 check_min_version("0.30.0.dev0")
