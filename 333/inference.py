@@ -154,6 +154,7 @@ frame_pos_history = np.array([0,0])
 hook_pred_history = np.array([0,0,0,0,0,0])
 mic_pred_history  = np.array([0,0,0,0,0,0])
 frame_pred_history= np.array([0,0,0,0,0,0])
+pred              = np.array([[0,0,0,0,0,0]])
 is_lift_start     = False
 
 for n, i_p in enumerate(image_list):
