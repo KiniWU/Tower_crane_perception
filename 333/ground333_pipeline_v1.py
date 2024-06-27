@@ -12,21 +12,22 @@ def obj_multi_filter(obj_pred_history,pred,object_class):
     # print("object_class\n",object_class)
     obj_index  = np.where( object_classes == object_class)
     obj_index  = obj_index[0]
+    # print("obj_index\n",obj_index)
     if len(obj_index) >= 2:
-        print("obj_index\n",obj_index)
         center_dist = []
         for index in obj_index:
-            print("obj_pred\n", pred[index,:])
+            # print("obj_pred\n", pred[index,:])
             current_center = pred2pos(pred[index,:])
-            last_center    = pred2pos(obj_pred_history[-1,:])
+            print("obj_pred_history[-1]\n",obj_pred_history[-1])
+            last_center    = pred2pos(obj_pred_history[-1])
             center_dist.append(np.linalg.norm(current_center-last_center))
         
         min_dist  = min(center_dist)
         min_index = center_dist.index(min_dist)
-        print("min_index",min_index)
+        # print("min_index",min_index)
         for index in obj_index:
             if index != obj_index[min_index]:
-                print("index",index)
+                # print("index",index)
                 pred = np.delete(pred, index, axis=0)
 
     return pred
@@ -42,8 +43,8 @@ def obj_loss_filter(obj_pred_history,pred,object_class):
             obj_loss_flag = False
 
     if obj_loss_flag == True:
-        # print(obj_pred_history.shape)
-        pred = np.vstack((pred,obj_pred_history[-1,:]))
+        # print("obj_pred_history[-1]\n",obj_pred_history[-1])
+        pred = np.vstack((pred,obj_pred_history[-1]))
 
     return pred
 
@@ -71,11 +72,13 @@ def obj_pred_history(obj_pred_history,pred,obj_class):
     for i in np.arange(pred.shape[0]):
         if pred[i,5] == obj_class:
             obj_loss_flag = False
-            obj_pred_history = np.vstack((obj_pred_history,pred[i,:]))
+            obj_pred_history.append(pred[i,:].tolist())
+            # obj_pred_history = np.vstack((obj_pred_history,pred[i,:]))
 
     if obj_loss_flag == True:
         # obj_pos_history = np.vstack((obj_pos_history,[[-1,-1]]))
-        obj_pred_history = np.vstack((obj_pred_history,obj_pred_history[-1,:]))
+        # obj_pred_history = np.vstack((obj_pred_history,obj_pred_history[-1,:]))
+        obj_pred_history.append(obj_pred_history[-1])
 
     return obj_pred_history
 
@@ -111,7 +114,8 @@ def pred2pos(pred):
 class APP333:
 
     def __init__(self) -> None:
-        self.video_path = Path("/home/tower_crane_data/dataset_333/2024-06-14-09-33-24_ruian/pic")
+        # self.video_path = Path("/home/tower_crane_data/dataset_333/2024-06-14-09-33-24_ruian/pic")
+        self.video_path = Path("/home/tower_crane_data/dataset_333/2024-06-12-10-55-10_luomazhou/pic")
         self.model_path = Path('/home/Tower_crane_perception/333/runs/train/333_v3/weights/last.pt')
         self.save_path  = Path("runs/detect")
         self.save_path.mkdir(exist_ok=True, parents=True)
@@ -120,16 +124,16 @@ class APP333:
         self.model_im_size = 1280
         
         #
-        self.hook_pos_history  = np.array([[0,0]])
-        self.mic_pos_history   = np.array([[0,0]])
-        self.frame_pos_history = np.array([[0,0]])
-        self.hook_pred_history = np.array([[0,0,0,0,0,0]])
-        self.mic_pred_history  = np.array([[0,0,0,0,0,1]])
-        self.frame_pred_history= np.array([[0,0,0,0,0,2]])
+        self.hook_pos_history  = []
+        self.mic_pos_history   = []
+        self.frame_pos_history = []
+        self.hook_pred_history = [[0,0,0,0,0,0]]
+        self.mic_pred_history  = [[0,0,0,0,0,1]]
+        self.frame_pred_history= [[0,0,0,0,0,2]]
         self.pred              = np.array([[0,0,0,0,0,0],[0,0,0,0,0,1]])
         self.is_lift_start     = False
         pass
-
+    
     def read_model(self):
         # read model
         self.model = torch.hub.load('yolov5', 'custom', path=self.model_path, source='local')
@@ -175,6 +179,7 @@ class APP333:
         frame_pred_history= self.frame_pred_history
         pred              = self.pred
 
+        print("pred\n",pred)
         pred = obj_multi_filter(hook_pred_history, pred,0)
         pred = obj_multi_filter(mic_pred_history,  pred,1)
         pred = obj_multi_filter(frame_pred_history,pred,2)
@@ -182,33 +187,46 @@ class APP333:
         pred = obj_loss_filter(hook_pred_history, pred,0)
         pred = obj_loss_filter(mic_pred_history,  pred,1)
         pred = obj_loss_filter(frame_pred_history,pred,2)
-        print("pred\n",self.pred)
+        print("filered pred\n",pred)
         self.pred = pred
 
+    def history_log(self):
+        hook_pred_history = self.hook_pred_history
+        mic_pred_history  = self.mic_pred_history
+        frame_pred_history= self.frame_pred_history
+        pred              = self.pred
+        if len(hook_pred_history) <=50:
+            hook_pred_history  = obj_pred_history(hook_pred_history, pred,0) #0-hook;1-mic;2-frame;3-people
+        else:
+            hook_pred_history.pop(0)
+        
+        if len(mic_pred_history) <=50:
+            mic_pred_history   = obj_pred_history(mic_pred_history,  pred,1) #0-hook;1-mic;2-frame;3-people
+        else:
+            mic_pred_history.pop(0)
+
+        if len(frame_pred_history) <=50:
+            frame_pred_history = obj_pred_history(frame_pred_history,pred,2) #0-hook;1-mic;2-frame;3-people
+        else:
+            frame_pred_history.pop(0)
+        
+        self.hook_pred_history = hook_pred_history
+        self.mic_pred_history  = mic_pred_history
+        self.frame_pred_history= frame_pred_history
 
     def check_mic_lifting(self):
         hook_pred_history = self.hook_pred_history
         mic_pred_history  = self.mic_pred_history
         frame_pred_history= self.frame_pred_history
         pred              = self.pred
-        is_lift_start     = self.is_lift_start
     
-        hook_pred_history  = obj_pred_history(hook_pred_history, pred,0) #0-hook;1-mic;2-frame;3-people
-        mic_pred_history   = obj_pred_history(mic_pred_history,  pred,1) #0-hook;1-mic;2-frame;3-people
-        frame_pred_history = obj_pred_history(frame_pred_history,pred,2) #0-hook;1-mic;2-frame;3-people
-
         is_hook_start     = check_obj_lift(hook_pred_history)
         is_mic_start      = check_obj_lift(mic_pred_history)
         is_frame_start    = check_obj_lift(frame_pred_history)
 
         if (is_hook_start and is_mic_start) or (is_hook_start and is_frame_start) or (is_mic_start and is_frame_start):
-            is_lift_start = True
-            print(is_lift_start)
-
-        self.hook_pred_history  = hook_pred_history
-        self.mic_pred_history   = mic_pred_history
-        self.frame_pred_history = frame_pred_history
-        self.is_lift_start      = is_lift_start
+            self.is_lift_start = True
+            print(self.is_lift_start)
 
     def plotting(self):
         img  = self.image
@@ -232,16 +250,19 @@ class APP333:
         for n, i_p in enumerate(self.image_list):
             # print(i_p)
             self.image  = cv2.imread(str(i_p))
+
+            # detection
+            self.ground333_detect()
+            # print("pred\n",self.pred)
+            # print("filtered pred\n",self.pred)
             
             # pred filtering
             self.pred_filtering()
 
-            # detection
-            self.ground333_detect()
-            
+            self.history_log()
 
             # check mic lifting 
-            self.check_mic_lifting()
+            # self.check_mic_lifting()
 
             #plotting 
             self.plotting()
