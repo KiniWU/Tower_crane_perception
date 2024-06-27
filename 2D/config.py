@@ -11,12 +11,13 @@ model_human_v1_path = Path('/home/Tower_crane_perception/2D/runs/train/exp/weigh
 
 UpperDaHua_video_path = Path("/home/tower_crane_data/site_data/test3/sync_camera_lidar/camera1")
 LowerDaHua_video_path = Path("")
-MVS_video_path = Path("/home/tower_crane_data/site_data/test4/sync_camera_lidar/mvs/")
+MVS_video_path = Path("/home/tower_crane_data/crcust/crcust_top/mvs_avia/moving_com_2024-05-24-17-50-23_ruian/pic/")
 video_with_human_path =  Path("/home/Tower_crane_perception/2D/human_detection/demo_vis")
 
 LowerOuster_lidar_path = Path("")
 UpperOuster_lidar_path = Path("/home/tower_crane_data/site_data/test3/sync_camera_lidar/ouster1")
-Livox_lidar_path = Path("/home/tower_crane_data/site_data/test4/sync_camera_lidar/livox/")
+Livox_lidar_path = Path("/home/tower_crane_data/crcust/crcust_top/mvs_avia/moving_com_2024-05-24-17-50-23_ruian/pcd/")
+Livox_depth_path = Path("/home/tower_crane_data/crcust/crcust_top/mvs_avia/moving_com_2024-05-24-17-50-23_ruian/dep/")
 
 Livox_save_path = Path("/home/Tower_crane_perception/2D/runs/inference/2d_lidar_livox/")
 UpperDahua_save_path = Path("/home/Tower_crane_perception/2D/runs/inference/2d_lidar_ouster_upper/")
@@ -85,6 +86,7 @@ elif USE_DEVICE == 2:
     model_path = model_v3_path
     video_path = MVS_video_path
     lidar_path = Livox_lidar_path
+    depth_path = Livox_depth_path
     save_path = Livox_save_path
     Intrinsic = MVS_Intrinsic
     c2L = MVS2Livox

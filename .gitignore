@@ -8,3 +8,5 @@
 *.DS_Store
 *.safetensors
 *.jpg
+*.bin
+*.okl

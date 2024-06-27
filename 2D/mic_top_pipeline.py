@@ -1,5 +1,9 @@
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+
 import torch
-from config import img_size, pixel2Camera
+from config import img_size, img_size, model_path, video_path, lidar_path, depth_path, save_path 
+from tower_utils import pixel2Camera
 import cv2
 import numpy as np
 from sklearn.cluster import KMeans
@@ -12,19 +16,23 @@ sys.path.append(str(Path(__file__).parent))
 from small_human_detection_im_crop import crop_im
 
 class App:
-    def __init__(self) -> None:
-        self.video_path = ""
-        self.depth_path = ""
-        self.mic_model_path = ""
-        self.person_model_path = ""
+    def __init__(self, video_path="", depth_path="", mic_model_path="", person_model_path="", save_path="", img_size=[]) -> None:
+        self.video_path = video_path
+        self.depth_path = depth_path
+        self.mic_model_path = mic_model_path
+        self.person_model_path = person_model_path
+        self.save_path = save_path
+        self.save_path.mkdir(exist_ok=True, parents=True)
 
         self.image_size = img_size
 
         self.model_im_size = 1280
 
-        self.x_ratio, self.y_ratio = self.image_size / self.model_im_size
+        self.x_ratio, self.y_ratio = self.image_size[0] / self.model_im_size, self.image_size[1] / self.model_im_size
+
+        self.init_model()
+        self.read_video()
         
-        pass
 
     def init_model(self):
         self.mic_model = torch.hub.load('yolov5', 'custom', path=self.mic_model_path, source='local')
@@ -47,14 +55,16 @@ class App:
         return (self.image_size[0]/2 -x, self.image_size[1] / 2 - y)
 
     def depth_cluster(self, pts, method="KMeans"):
-        kmeans = KMeans(n_clusters=2, random_state=0, n_init="auto").fit(X)
+        kmeans = KMeans(n_clusters=2, random_state=0, n_init="auto").fit(pts)
 
-        Z = np.argmin(kmeans.cluster_centers_)
+        Z = np.min(kmeans.cluster_centers_)
+
+        print(kmeans.cluster_centers_)
 
         return Z
 
-    def mic_2D_detect_dep(self, img_input, dep):
-        img_input = cv2.resize(img_input, (self.model_im_size, self.model_im_size), cv2.INTER_CUBIC)
+    def mic_2D_detect_dep(self, img, dep):
+        img_input = cv2.resize(img, (self.model_im_size, self.model_im_size), cv2.INTER_CUBIC)
         img_input = cv2.cvtColor(img_input, cv2.COLOR_BGR2RGB)
         results = self.mic_model(img_input, size=self.model_im_size)
 
@@ -65,24 +75,42 @@ class App:
                                     [(pred[0, 1]+pred[0, 3])*self.y_ratio/2]])
             pixel_pt_rot = self.rotate_pt_with_imc(pixel_pt) # x,y
 
-            left_top = self.rotate_pt_with_imc((pred[0, 0], pred[0, 1])) # x_min, y_min --> x_max, y_max
-            right_bottom = self.rotate_pt_with_imc((pred[0, 2], pred[0, 3])) # x_max, y_max --> x_min, y_min
+            left_top = self.rotate_pt_with_imc((pred[0, 0]*self.x_ratio, pred[0, 1]*self.y_ratio)) # x_min, y_min --> x_max, y_max
+            right_bottom = self.rotate_pt_with_imc((pred[0, 2]*self.x_ratio, pred[0, 3]*self.y_ratio)) # x_max, y_max --> x_min, y_min
 
-            depth_area = dep[right_bottom[0]:left_top[0], right_bottom[1]:left_top[1]]
+            depth_area = dep[int(right_bottom[1]):int(left_top[1]), int(right_bottom[0]):int(left_top[0])]
 
-            depth_area_pts = np.where(depth_area>0)
-            Z = self.depth_cluster(depth_area_pts)
+            # dep = dep / (np.max(dep)/255)
 
-            camera_pt = pixel2Camera(pixel_pt_rot, Z)
+            # dep = np.array(dep, np.uint8)
+            # cv2.imwrite("depth.png", dep)
+            # print((int(right_bottom[1]), int(right_bottom[0])), (int(left_top[1]), int(left_top[0])))
 
-        return camera_pt, (right_bottom[0], right_bottom[1], left_top[0], left_top[1])
+            # img_ori = cv2.rotate(img, cv2.ROTATE_180)
+            # depth_area_bbox = cv2.rectangle(dep, pt1=(int(right_bottom[0]), int(right_bottom[1])), 
+            #                             pt2=(int(left_top[0]), int(left_top[1])), 
+            #                             color=(0, 0, 255), 
+            #                             thickness=15)
+            # cv2.imwrite("depth_area_bbox.png", depth_area_bbox)
+
+            # depth_area_pts = np.where(depth_area>0)
+            # depth_area_pts = np.reshape(depth_area_pts, (-1, 2))
+            # depth_area_pts[:, 0] += int(right_bottom[1])
+            # depth_area_pts[:, 1] += int(right_bottom[0])
+            depth_info = depth_area[np.where(depth_area>0)]
+            Z = self.depth_cluster(np.array(depth_info, np.float32).reshape(-1, 1)) # h,w, i.e., y, x
+
+            camera_pt = pixel2Camera(np.array([pixel_pt_rot[0][0], pixel_pt_rot[1][0], 1]), Z)
+
+            return camera_pt, (right_bottom[0], right_bottom[1], left_top[0], left_top[1])
+        else:
+            return None, None
     
     def person_2D_detect_dep(self, img_input, dep):
         
         # img_input = cv2.resize(img_input, (self.model_im_size, self.model_im_size), cv2.INTER_CUBIC)
         # img_input = cv2.cvtColor(img_input, cv2.COLOR_BGR2RGB)
         
-        img_detected = np.zeros_like(img_input, np.uint8)
         ori_w, ori_h = img_size
 
         num_batches = (8, 8)
@@ -106,9 +134,7 @@ class App:
                 if y_end > ori_h:
                     y_end = ori_h
 
-                print(len(img_patches))
                 img_piece = img_patches[i*8 + j]
-                print(img_piece.shape)
                 img_input = cv2.resize(img_piece, size, cv2.INTER_CUBIC)
                 img_input = cv2.cvtColor(img_input, cv2.COLOR_BGR2RGB)
                 
@@ -116,7 +142,6 @@ class App:
                 results = self.person_model(img_input, size=size[0])
 
                 pred = results.pred[0].cpu().numpy()
-                print("yolo pred\n",pred)
                 if pred.shape[0] > 0:
 
                     x_min = pred[0, 0]*x_ratio + x_start
@@ -127,7 +152,7 @@ class App:
                     left_top = self.rotate_pt_with_imc((x_min, y_min)) # x_min, y_min --> x_max, y_max
                     right_bottom = self.rotate_pt_with_imc((x_max, y_max)) # x_max, y_max --> x_min, y_min
 
-                    people_bboxes.append([right_bottom[0], right_bottom[1], left_top[0], left_top[1]]) # x_min, y_min, x_max, y_max, after roration
+                    people_bboxes.append([right_bottom[0], right_bottom[1], left_top[0], left_top[1]]) # x_min, y_min, x_max, y_max, after rotation
         
         if len(people_bboxes) == 0:
             return None
@@ -136,15 +161,33 @@ class App:
 
 
     def run(self):
-        for n, (i_p, d_p) in enumerate(zip(self.image_video, self.depth_video)):
+        font = cv2.FONT_HERSHEY_SIMPLEX 
+  
+        # org 
+        org = (50, 50) 
+        
+        # fontScale 
+        fontScale = 2
+        
+        # Blue color in BGR 
+        color = (255, 0, 0) 
+        
+        # Line thickness of 2 px 
+        thickness = 2
+
+        out = cv2.VideoWriter(str(self.save_path / "video_comp.avi"), cv2.VideoWriter_fourcc(*'MPEG'), 2, self.image_size, True)
+
+        for n, (i_p, d_p) in enumerate(zip(self.image_video[:50], self.depth_video[:50])):
             print(i_p)
             # print(n)
             img = cv2.imread(str(i_p))
-            dep = cv2.imread(str(d_p))
-            img_input = cv2.rotate(img, cv2.ROTATE_180_CLOCKWISE)
+            dep = cv2.imread(str(d_p), cv2.IMREAD_UNCHANGED)
+            # print(dep.shape)
+            # dep = cv2.cvtColor(dep, cv2.COLOR_BGR2GRAY)
+            img_input = cv2.rotate(img, cv2.ROTATE_180)
 
             mic_pt, mic_box_2d = self.mic_2D_detect_dep(img_input, dep)
-            people_bboxes = self.person_2D_detect_dep(img_input, dep)
+            # people_bboxes = self.person_2D_detect_dep(img_input, dep)
 
             img_detected = img
             if mic_pt is not None:
@@ -153,17 +196,28 @@ class App:
                                     pt2=(int(mic_box_2d[2]), int(mic_box_2d[3])), 
                                     color=(0, 0, 255), 
                                     thickness=5)
-            if people_bboxes is not None:
-                for p_b in people_bboxes:
-                    img_detected = cv2.rectangle(img, 
-                                        pt1=(int(p_b[0]), int(p_b[1])), 
-                                        pt2=(int(p_b[2]), int(p_b[3])), 
-                                        color=(0, 255, 0), 
-                                        thickness=5)
+                img_detected = cv2.putText(img_detected, str(mic_pt), (int(mic_box_2d[0]), int(mic_box_2d[1])), font,  
+                    fontScale, color, thickness, cv2.LINE_AA) 
+            # if people_bboxes is not None:
+            #     for p_b in people_bboxes:
+            #         img_detected = cv2.rectangle(img, 
+            #                             pt1=(int(p_b[0]), int(p_b[1])), 
+            #                             pt2=(int(p_b[2]), int(p_b[3])), 
+            #                             color=(0, 255, 0), 
+            #                             thickness=5)
 
-            cv2.imwrite(str(n) + ".png", img_detected)
+            cv2.imwrite(str(self.save_path/(str(n) + ".png")), img_detected)
+            out.write(img_detected)
+
+        out.release()
+        cv2.destroyAllWindows()
             
 
 if __name__ == "__main__":
-    app = App()
+    app = App(video_path=video_path, 
+              depth_path=depth_path, 
+              mic_model_path=model_path, 
+              person_model_path=model_path, 
+              save_path=save_path,
+              img_size=img_size)
     app.run()

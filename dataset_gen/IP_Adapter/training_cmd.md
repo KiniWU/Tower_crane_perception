@@ -10,8 +10,8 @@ python tutorial_train_mic.py \
   --learning_rate=1e-04 \
   --weight_decay=0.01 \
   --i_drop_rate=0.4\
-  --output_dir="/home/weights/trained_models/ip_adapter_mic_only2" \
-  --save_steps=200
+  --output_dir="/home/weights/trained_models/ip_adapter_mic_only_v3" \
+  --save_steps=2000
 
 
   --pretrained_ip_adapter_path="/home/weights/h94/IP-Adapter/sdxl_models/ip-adapter_sdxl.bin"
