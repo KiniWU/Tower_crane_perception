@@ -7,19 +7,22 @@ import random
 pipeline = StableDiffusionPipeline.from_single_file("/home/weights/sd1-5/juggernaut.safetensors", # "/home/weights/sd1-5/runwayml/stable-diffusion-v1-5/", 
                                                       use_safetensors=True,
                                                       torch_dtype=torch.float32).to("cuda")
-pipeline.load_ip_adapter("/home/weights/trained_models/ip_adapter_mic_only2/", subfolder="checkpoint-3000/", weight_name="ip_adapter.bin")
+# pipeline = StableDiffusionPipeline.from_pretrained("/home/weights/sd1-5/runwayml/stable-diffusion-v1-5/", 
+#                                                       use_safetensors=True,
+#                                                       torch_dtype=torch.float32).to("cuda")
+pipeline.load_ip_adapter("/home/weights/trained_models/ip_adapter_mic_only_v3/", subfolder="checkpoint-12000/", weight_name="ip_adapter.bin")
 #print(pipeline)
-pipeline.set_ip_adapter_scale(0.48)
+pipeline.set_ip_adapter_scale(1.0)
 
-image = load_image("/home/tower_crane_data/gen_dataset/333-v2/train/images/hik_11_png.rf.8f08b79aea46d27122c064d8710083b0.jpg")
+image = load_image("/home/tower_crane_data/gen_dataset/333-v3/cropped/hik_26_png.rf.e24aadfe1521027cf53bde3d7bbf512d.jpg")
 seed = random.randint(1, 44455201144)
 print(seed)
 generator = torch.Generator(device="cuda").manual_seed(seed) 
 images = pipeline(
-    prompt='A Modular Integrated Construction on the construction site',
+    prompt='A Modular Integrated Construction on the construction site beside the sea',
     ip_adapter_image=image,
     negative_prompt="",
-    num_inference_steps=50,
+    num_inference_steps=80,
     generator=generator,
     guidance_scale=5,
 ).images[0]
