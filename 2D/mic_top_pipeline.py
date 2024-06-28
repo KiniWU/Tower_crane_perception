@@ -6,7 +6,7 @@ from config import img_size, img_size, model_path, video_path, lidar_path, depth
 from tower_utils import pixel2Camera
 import cv2
 import numpy as np
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, MeanShift
 import sys
 from pathlib import Path
 
@@ -43,6 +43,9 @@ class App:
         self.person_model.iou = 0.2
         self.person_model.conf = 0.2
 
+        self.kmeans = KMeans(n_clusters=2, random_state=0, n_init="auto")
+        self.mean_shift = MeanShift()
+
     def read_video(self):
         self.image_video = sorted(self.video_path.rglob("*.png"), key=lambda a: int(str(a).split("_")[-1].split(".")[0]))
         self.depth_video = sorted(self.depth_path.rglob("*.png"), key=lambda a: int(str(a).split("_")[-1].split(".")[0]))
@@ -55,13 +58,47 @@ class App:
         return (self.image_size[0]/2 -x, self.image_size[1] / 2 - y)
 
     def depth_cluster(self, pts, method="KMeans"):
-        kmeans = KMeans(n_clusters=2, random_state=0, n_init="auto").fit(pts)
+        kmeans_res = self.kmeans.fit(pts)
 
-        Z = np.min(kmeans.cluster_centers_)
+        Z = np.min(kmeans_res.cluster_centers_)
 
-        print(kmeans.cluster_centers_)
+        label_min = np.argmin(kmeans_res.cluster_centers_)
 
-        return Z
+        #print(kmeans_res.cluster_centers_)
+
+        return Z, np.where(kmeans_res.labels_==label_min)
+    
+    def danger_detect(self, mic_3d_box, dep, danger_dist=5):
+        """
+        mic_pt: x_min, x_max, y_min, y_max in pixel coordinate, z_min, z_max in camera coordinate 
+        dep: depth image 16 channels with mic area as zero
+        danger_dist: the distance between mic and the objects regarded as danger [m]
+        return: list of the bboxes of dangers, [[x_min, y_min, x_max, y_max]]
+        """
+        x_min, x_max, y_min, y_max, z_min, z_max = mic_3d_box
+        dep_danger = dep[np.where(dep>(z_min-danger_dist))]
+        danger_coordinates = np.where(dep_danger<(z_max+danger_dist))
+        num = danger_coordinates[0].shape
+        selected_index = np.zeros((num, 1)) * False
+        for i in range(num):
+            x = danger_coordinates[1][i]
+            y = danger_coordinates[0][i]
+            if x > (x_min - danger_dist) and x < (x_max + danger_dist) and y < (y_max + danger_dist)and y > (y_min - danger_dist):
+                selected_index[i] = True
+
+        slected_coordinates = np.array([danger_coordinates[0][selected_index], danger_coordinates[1][selected_index]]).reshape(-1, 2)
+
+        mean_shift_res = self.mean_shift.fit(slected_coordinates)
+
+        num_cluster = mean_shift_res.cluster_centers_.shape[0]
+        danger_bbox_list = []
+        for j in range(num_cluster):
+            danger_piece_coor = slected_coordinates[mean_shift_res.labels_==j]
+            danger_piece_y_min, danger_piece_x_min = np.min(danger_piece_coor, axis = 0)
+            danger_piece_y_max, danger_piece_x_max = np.max(danger_piece_coor, axis = 0)
+            danger_bbox_list.append([danger_piece_x_min, danger_piece_y_min, danger_piece_x_max, danger_piece_y_max])
+
+        return danger_bbox_list
 
     def mic_2D_detect_dep(self, img, dep):
         img_input = cv2.resize(img, (self.model_im_size, self.model_im_size), cv2.INTER_CUBIC)
@@ -98,13 +135,18 @@ class App:
             # depth_area_pts[:, 0] += int(right_bottom[1])
             # depth_area_pts[:, 1] += int(right_bottom[0])
             depth_info = depth_area[np.where(depth_area>0)]
-            Z = self.depth_cluster(np.array(depth_info, np.float32).reshape(-1, 1)) # h,w, i.e., y, x
+            Z, mic_coor = self.depth_cluster(np.array(depth_info, np.float32).reshape(-1, 1)) # h,w, i.e., y, x
 
             camera_pt = pixel2Camera(np.array([pixel_pt_rot[0][0], pixel_pt_rot[1][0], 1]), Z)
 
-            return camera_pt, (right_bottom[0], right_bottom[1], left_top[0], left_top[1])
+            dep_mask = dep
+            dep_mask[mic_coor] = 0
+
+            danger_list = self.danger_detect(mic_3d_box=[right_bottom[0], right_bottom[1], left_top[0], left_top[1]], dep=dep_mask, danger_dist=10)
+
+            return camera_pt, (right_bottom[0], right_bottom[1], left_top[0], left_top[1]), danger_list
         else:
-            return None, None
+            return None, None, None
     
     def person_2D_detect_dep(self, img_input, dep):
         
@@ -186,7 +228,7 @@ class App:
             # dep = cv2.cvtColor(dep, cv2.COLOR_BGR2GRAY)
             img_input = cv2.rotate(img, cv2.ROTATE_180)
 
-            mic_pt, mic_box_2d = self.mic_2D_detect_dep(img_input, dep)
+            mic_pt, mic_box_2d, danger_list = self.mic_2D_detect_dep(img_input, dep)
             # people_bboxes = self.person_2D_detect_dep(img_input, dep)
 
             img_detected = img
@@ -194,10 +236,17 @@ class App:
                 img_detected = cv2.rectangle(img, 
                                     pt1=(int(mic_box_2d[0]), int(mic_box_2d[1])), 
                                     pt2=(int(mic_box_2d[2]), int(mic_box_2d[3])), 
-                                    color=(0, 0, 255), 
+                                    color=(255, 0, 0), 
                                     thickness=5)
                 img_detected = cv2.putText(img_detected, str(mic_pt), (int(mic_box_2d[0]), int(mic_box_2d[1])), font,  
                     fontScale, color, thickness, cv2.LINE_AA) 
+                if len(danger_list) >0:
+                    for d_bb in danger_list:
+                        img_detected = cv2.rectangle(img_detected, 
+                                    pt1=(int(d_bb[0]), int(d_bb[1])), 
+                                    pt2=(int(d_bb[2]), int(d_bb[3])), 
+                                    color=(0, 0, 255), 
+                                    thickness=5)
             # if people_bboxes is not None:
             #     for p_b in people_bboxes:
             #         img_detected = cv2.rectangle(img, 
