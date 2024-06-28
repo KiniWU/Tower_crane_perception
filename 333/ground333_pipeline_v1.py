@@ -48,14 +48,24 @@ def obj_loss_filter(obj_pred_history,pred,object_class):
 
     return pred
 
+def obj_loss_KFfilter(obj_pred_history,pred,object_class):
+    # deal with detection lossing for the object
+    # inputs :
+    # outputs:
+    for i in pred:
+        pass
+
+    return pred
+
 def check_obj_lift(pred_history,frequency=5,interval=5):
     # check whether mic lifting start 
     # inputs :
     # outputs:
-    frame_num = pred_history.shape[0]
+
+    frame_num = len(pred_history)
     if frame_num >= frequency*interval:
-        current_pixel_pos   = pred2pos(pred_history[-1,:])
-        prev_pixel_pos      = pred2pos(pred_history[-frequency*interval,:])
+        current_pixel_pos   = pred2pos(pred_history[-1])
+        prev_pixel_pos      = pred2pos(pred_history[-frequency*interval])
         pixel_dist = np.linalg.norm(current_pixel_pos-prev_pixel_pos)
         if pixel_dist > 100:
             return True
@@ -240,7 +250,7 @@ class APP333:
                         color=colors[int(pred[i,5])], 
                         thickness=10)
         if is_lift_start == True:
-            cv2.putText(img,'the mic lifting start:',(100,100),cv2.FONT_HERSHEY_COMPLEX,1,(0,0,255),1)
+            cv2.putText(img,'the mic lifting start:',(100,100),cv2.FONT_HERSHEY_COMPLEX,1,(0,0,255),10)
 
     def run(self):
         self.read_model()
@@ -262,7 +272,7 @@ class APP333:
             self.history_log()
 
             # check mic lifting 
-            # self.check_mic_lifting()
+            self.check_mic_lifting()
 
             #plotting 
             self.plotting()

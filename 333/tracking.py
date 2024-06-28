@@ -1,4 +1,5 @@
 import numpy as np
+import cv2
 
 def KF_init(initial_state):
     # init kalman filter
