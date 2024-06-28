@@ -81,9 +81,9 @@ class MyDataset(torch.utils.data.Dataset):
 
         
         rand_background = random.random()
-        if rand_background > 0.8:
-            bg_im = Image.open(random.choice(self.bg_im_files))
-            Image.Image.paste(bg_im, mic_image, (int(x_min/x_ratio), int(y_min/y_ratio)))
+        # if rand_background > 0.8:
+        #     bg_im = Image.open(random.choice(self.bg_im_files))
+        #     Image.Image.paste(bg_im, mic_image, (int(x_min/x_ratio), int(y_min/y_ratio)))
             #bg_im.save("visualize.png")
             
             #raw_image = bg_im
