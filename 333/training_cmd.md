@@ -15,6 +15,10 @@ python train.py --img 1280 --epochs 1000 --data dataset_333_v1.yaml --weights yo
 
 ## test2
 python train.py --img 1280 --epochs 100 --data data/dataset_333_v1.yaml --weights yolov5l6.pt --optimizer Adam --hyp data/hyps/hyp.scratch-high.yaml
+      Epoch    GPU_mem   box_loss   obj_loss   cls_loss  Instances       Size
+      98/99      6.28G    0.02033    0.01094   0.001074          7       1280: 1
+                 Class     Images  Instances          P          R      mAP50   
+                   all         28        140      0.848      0.902       0.86       0.56
 
 # training cmd for 333 system based on dataset-333-v3_1
 python train.py --img 1280 --epochs 1000 --data dataset_333.yaml --weights yolov5l6.pt --optimizer Adam --hyp data/hyps/hyp.scratch-high.yaml
