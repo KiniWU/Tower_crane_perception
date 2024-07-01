@@ -3,6 +3,8 @@ sudo docker images
 sudo docker run --rm --runtime=nvidia -it --gpus all -v /media/itx4090/系统1/code:/home/ yolo_v5:1_1 bash
 conda activate test
 
+sudo docker run --rm -it  -v /home/haochen/HKCRC:/home/ yolo_v5:1_2 bash
+
 # training cmd for small human detection
 python train.py --img 640 --epochs 1000 --data dataset_human.yaml --weights yolov5l.pt --optimizer Adam --hyp data/hyps/hyp.scratch-high_site.yaml
 

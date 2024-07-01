@@ -8,6 +8,7 @@ def obj_multi_filter(obj_pred_history,pred,object_class):
     # deal with multiple detections for the object(only allows one detection)
     # inputs :
     # outputs:
+    ### choose the bounding box which is close to last one
     object_classes = pred[:,5]
     # print("object_class\n",object_class)
     obj_index  = np.where( object_classes == object_class)
@@ -126,7 +127,7 @@ class APP333:
     def __init__(self) -> None:
         # self.video_path = Path("/home/tower_crane_data/dataset_333/2024-06-14-09-33-24_ruian/pic")
         self.video_path = Path("/home/tower_crane_data/dataset_333/2024-06-12-10-55-10_luomazhou/pic")
-        self.model_path = Path('/home/Tower_crane_perception/333/runs/train/333_v3/weights/last.pt')
+        self.model_path = Path('/home/Tower_crane_perception/333/runs/train/333_v1/weights/last.pt')
         self.save_path  = Path("runs/detect")
         self.save_path.mkdir(exist_ok=True, parents=True)
         self.image      = ""
@@ -148,7 +149,7 @@ class APP333:
         # read model
         self.model = torch.hub.load('yolov5', 'custom', path=self.model_path, source='local')
         self.model.iou = 0.2
-        self.model.conf = 0.7
+        self.model.conf = 0.2
 
 
     def read_video(self):
