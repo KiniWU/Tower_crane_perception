@@ -1,0 +1,15 @@
+names:
+- hook
+- mic
+- mic_frame
+- people
+nc: 4
+roboflow:
+  license: CC BY 4.0
+  project: 333-mszug
+  url: https://universe.roboflow.com/hkcrctowercrane/333-mszug/dataset/1
+  version: 1
+  workspace: hkcrctowercrane
+#test: ../test/images
+train: /home/tower_crane_data/dataset_333/v4/train/images
+val: /home/tower_crane_data/dataset_333/v4/valid/images

@@ -23,7 +23,10 @@ python train.py --img 1280 --epochs 100 --data data/dataset_333_v1.yaml --weight
                    all         28        140      0.848      0.902       0.86       0.56
 
 # training cmd for 333 system based on dataset-333-v3_1
-python train.py --img 1280 --epochs 1000 --data dataset_333.yaml --weights yolov5l6.pt --optimizer Adam --hyp data/hyps/hyp.scratch-high.yaml
+python train.py --img 1280 --epochs 1000 --data data/dataset_333_v3.yaml --weights yolov5l6.pt --optimizer Adam --hyp data/hyps/hyp.scratch-high.yaml
 
 # training cmd for 333 system based on dataset-333-v4_1
-python train.py --img 1280 --epochs 1000 --batch-size 1 --data dataset_333.yaml --weights yolov5l6.pt --optimizer Adam --hyp data/hyps/hyp.scratch-high_site.yaml
+python train.py --img 1280 --epochs 1000 --batch-size 1 --data data/dataset_333_v4.yaml --weights yolov5l6.pt --optimizer Adam --hyp data/hyps/hyp.scratch-high_site.yaml
+
+# training cmd for 333 system based on dataset-333-v4_2
+python train.py --img 1280 --epochs 1000 --batch-size 1 --data data/dataset_333_v4.yaml --weights '' --cfg models/hub/yolov5l6.yaml --optimizer Adam --hyp data/hyps/hyp.scratch-high.yaml

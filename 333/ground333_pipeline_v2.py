@@ -161,6 +161,7 @@ class APP333:
         self.mic_pred_history  = [[0,0,0,0,0,1]]
         self.frame_pred_history= [[0,0,0,0,0,2]]
         self.pred              = np.array([[0,0,0,0,0,0],[0,0,0,0,0,1]])
+        self.filtered_pred     = np.empty((0,6))
         self.is_lift_start     = False
         pass
     
@@ -246,8 +247,8 @@ class APP333:
 
     def obj_multi_filter(self):
         if self.hook_pred.shape[0]>1:
-            self.hook_pred = self.hook_pred[0,:]
-            self.hook_pred = self.hook_pred.reshape((1,6))
+            self.hook_pred = self.hook_pred[0,:] # keep the prediction with highest probability
+            self.hook_pred = self.hook_pred.reshape((1,6)) # convert 1D array to 2D array
 
         if self.mic_pred.shape[0]>1:
             self.mic_pred = self.mic_pred[0,:]
@@ -355,19 +356,16 @@ class APP333:
         img  = self.image
         pred = self.pred
         is_lift_start = self.is_lift_start
-        # for i in np.arange(pred.shape[0]):
-        #     colors = [[0,0,0],(0, 255, 0),(0,0,255),(255, 0, 0)]
-            # img    = cv2.rectangle(img, 
-            #             pt1=(int(pred[i, 0]), int(pred[i, 1])), 
-            #             pt2=(int(pred[i, 2]), int(pred[i, 3])), 
-            #             color=colors[int(pred[i,5])], 
-            #             thickness=10)
-        
-        img    = cv2.rectangle(img, 
-            pt1=(int(self.mic_pred[0, 0]), int(self.mic_pred[0, 1])), 
-            pt2=(int(self.mic_pred[0, 2]), int(self.mic_pred[0, 3])), 
-            color=[0,0,0], 
-            thickness=10)
+        self.filtered_pred = np.vstack((self.hook_pred,\
+                            self.mic_pred,self.frame_pred,self.people_pred))
+        # print("self.filtered_pred\n",self.filtered_pred)
+        for i in np.arange(self.filtered_pred.shape[0]):
+            colors = [[0,0,0],(0, 255, 0),(0,0,255),(255, 0, 0)]
+            img    = cv2.rectangle(img, 
+                        pt1=(int(self.filtered_pred[i, 0]), int(self.filtered_pred[i, 1])), 
+                        pt2=(int(self.filtered_pred[i, 2]), int(self.filtered_pred[i, 3])), 
+                        color=colors[int(self.filtered_pred[i,5])], 
+                        thickness=10)
         if is_lift_start == True:
             cv2.putText(img,'the mic lifting start:',(100,100),cv2.FONT_HERSHEY_COMPLEX,1,(0,0,255),10)
 
@@ -396,7 +394,7 @@ class APP333:
             self.obj_loss_filter()
 
             # check mic lifting 
-            self.check_mic_lifting()
+            # self.check_mic_lifting()
 
             #plotting 
             self.plotting()
