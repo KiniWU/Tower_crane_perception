@@ -30,3 +30,10 @@ python train.py --img 1280 --epochs 1000 --batch-size 1 --data data/dataset_333_
 
 # training cmd for 333 system based on dataset-333-v4_2
 python train.py --img 1280 --epochs 1000 --batch-size 1 --data data/dataset_333_v4.yaml --weights '' --cfg models/hub/yolov5l6.yaml --optimizer Adam --hyp data/hyps/hyp.scratch-high.yaml
+
+                 Class     Images  Instances          P          R      mAP50   mAP50-95: 
+                   all        100        627      0.696      0.586      0.662       0.37
+                  hook        100         99      0.611      0.505      0.567      0.185
+                   mic        100        100      0.532       0.78      0.781      0.543
+             mic_frame        100        100      0.988      0.797      0.961      0.637
+                people        100        328      0.652      0.262      0.338      0.116

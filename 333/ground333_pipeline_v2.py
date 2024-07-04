@@ -138,7 +138,7 @@ class APP333:
         # self.image_path = Path("/home/tower_crane_data/dataset_333/2024-06-14-09-33-24_ruian/pic")
         self.image_path = Path("/home/tower_crane_data/dataset_333/2024-06-12-10-55-10_luomazhou/pic")
         self.depth_path = Path("/home/tower_crane_data/dataset_333/2024-06-12-10-55-10_luomazhou/dep")
-        self.model_path = Path('/home/Tower_crane_perception/333/runs/train/333_v1/weights/last.pt')
+        self.model_path = Path('/home/Tower_crane_perception/333/runs/train/333_v1/weights/best.pt')
         self.save_path  = Path("runs/detect")
         self.save_path.mkdir(exist_ok=True, parents=True)
 
@@ -333,11 +333,8 @@ class APP333:
         dep = self.dep
         depth_area = dep[int(mic_pred[0,0]):int(mic_pred[0,2]), int(mic_pred[0,1]):int(mic_pred[0,3])]
         # print("depth_area\n",depth_area)
-        with open('depth_area.txt', 'w') as file:
-            file.write(str(depth_area))
-
         depth_info = depth_area[np.where(depth_area>0)]
-        # print("depth_info\n",depth_info)
+        print("depth_info\n",depth_info)
         Z, mic_coor = self.depth_cluster(np.array(depth_info, np.float32).reshape(-1, 1)) # h,w, i.e., y, x
         pass
 
@@ -378,6 +375,8 @@ class APP333:
             # print(i_p)
             self.image  = cv2.imread(str(i_p))
             self.dep    = cv2.imread(str(d_p), cv2.IMREAD_UNCHANGED)
+            # self.dep = self.dep[np.where(self.dep>0)]
+            # print("dep\n",self.dep)
             # print(self.dep)
             # detection
             self.ground333_detect()
@@ -394,7 +393,7 @@ class APP333:
             self.obj_loss_filter()
 
             # check mic lifting 
-            # self.check_mic_lifting()
+            self.check_mic_lifting()
 
             #plotting 
             self.plotting()
@@ -404,6 +403,7 @@ class APP333:
 
             if n>200:
                 break
+
         out.release()
         cv2.destroyAllWindows()
 
