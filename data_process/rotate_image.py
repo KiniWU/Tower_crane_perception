@@ -1,5 +1,6 @@
 import cv2
 import os
+from pathlib import Path
 
 def rotate_image(input_dir,output_dir):
     if not os.path.exists(output_dir):
@@ -9,6 +10,7 @@ def rotate_image(input_dir,output_dir):
     processed_files = 0
 
     for img_name in os.listdir(input_dir):
+        print(img_name)
         
         img_path = os.path.join(input_dir, img_name)
         # read img
@@ -22,10 +24,12 @@ def rotate_image(input_dir,output_dir):
 
         # update process
         processed_files += 1
-        print(f'process：{processed_files}/{total_files}')
+        #print(f'process：{processed_files}/{total_files}')
+        
 
 if __name__=="__main__":
-    input_dir  = '/home/tower_crane_data/dataset_333/2024-06-12-10-55-10_luomazhou/dep'
-    output_dir = '/home/tower_crane_data/dataset_333/2024-06-12-10-55-10_luomazhou/dep_rotated'
+    input_dir  = '/home/tower_crane_data/crcust/crcust_top/mvs_avia/2024-06-28-11-15-24/pic'
+    output_dir = '/home/tower_crane_data/crcust/crcust_top/mvs_avia/2024-06-28-11-15-24/pic_rotated'
+    Path(output_dir).mkdir(exist_ok=True, parents=True)
     rotate_image(input_dir,output_dir)
 
