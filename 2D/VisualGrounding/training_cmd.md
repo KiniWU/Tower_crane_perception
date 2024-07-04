@@ -1,0 +1,2 @@
+# inference
+python train_net.py --eval_only --resume --eval_get_content_features --num-gpus 2 --config-file /home/Tower_crane_perception/2D/VisualGrounding/configs/dinov_sam_coco_train.yaml COCO.TEST.BATCH_SIZE_TOTAL=8 MODEL.WEIGHTS=/home/weights/grounding/model_swinT.pth OUTPUT_DIR=./results

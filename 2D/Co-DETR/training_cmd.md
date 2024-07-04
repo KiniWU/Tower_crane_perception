@@ -1,0 +1,1 @@
+sh tools/dist_train.sh /home/Tower_crane_perception/2D/Co-DETR/projects/configs/co_dino/co_dino_5scale_swin_large_1x_coco.py 2 results
